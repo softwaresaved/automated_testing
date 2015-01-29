@@ -19,7 +19,7 @@ We then write automated tests that:
 
 We assume that the software to be tested has the following qualities:
 
-* It can be run from the command-line, in batch mode. That is, the user can invoke the software from the Linux/Unix shell or DOS prompt and once they press ENTER the software runs to completion without the need for further user interaction.
+* It can be run from the command-line, in batch mode. That is, the user can invoke the software from the Linux/Unix shell or Windows DOS prompt and once they press ENTER the software runs to completion without the need for further user interaction.
 * It reads in zero or more input files.
 * It supports zero or more command-line arguments.
 * It outputs zero or more files.
@@ -43,7 +43,7 @@ If using Linux/Unix, then, once you have the repository, run:
     chmod +x test_count_frequency.sh
     export PATH=.:$PATH
 
-The software is called count_frequency and can be run as follows under both Linux/Unix and DOS:
+The software is called count_frequency and can be run as follows under both Linux/Unix and Windows:
 
     count_frequency INPUT_FILE OUTPUT_FILE
 
@@ -124,7 +124,7 @@ We can run this and so run the software, as follows:
 
 ## Write code that checks the return code
 
-os.system returns the return code from the system call which can then be checked. Linux/Unix and DOS both adopt the convention that a return code of 0 means that the command exited OK and non-zero indicates an error. So, we can check that this is the case:
+os.system returns the return code from the system call which can then be checked. Linux/Unix and Windows both adopt the convention that a return code of 0 means that the command exited OK and non-zero indicates an error. So, we can check that this is the case:
 
     import os
     from nose.tools import assert_equal
@@ -159,7 +159,7 @@ The above tests can help us to check, when working with our software, that we ha
 
     result = os.system("diff -q freqs2013.dat testoracle/freqs2013.dat")
 
-For Windows could use the DOS fc (file compare) command (using > NUL to suppress its output) e.g.
+For Windows could use the Windows DOS fc (file compare) command (using > NUL to suppress its output) e.g.
 
     result = os.system("fc freqs2013.dat testoracle/freqs2013.dat > NUL")
 
