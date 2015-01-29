@@ -14,6 +14,18 @@
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
+# count_frequency tests
+#
+# These tests expect:
+# - count_frequency to be in the path or the current directory.
+# - Input files to be in a samples/ directory:
+#   - events2013.dat
+# - Test oracle files to be in a testoracle/ directory:
+#   - freqs2013.dat created via 
+#     count_frequency samples/events2013.dat testoracle/freqs2013.dat
+#   - freqs2013_5.dat created via 
+#     count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
+
 # $1 - file to check existence for.
 check_file_exists() {
   if [ -f "$1" ]

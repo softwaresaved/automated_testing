@@ -20,6 +20,20 @@ from nose.tools import assert_not_equal
 from nose.tools import assert_true
 
 """
+count_frequency tests
+
+These tests expect:
+- count_frequency to be in the path or the current directory.
+- Input files to be in a samples/ directory:
+  - events2013.dat
+- Test oracle files to be in a testoracle/ directory:
+  - freqs2013.dat created via 
+    count_frequency samples/events2013.dat testoracle/freqs2013.dat
+  - freqs2013_5.dat created via 
+    count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
+"""
+
+"""
 Compare two files, line by line, for equality.
 """
 def compare_files(file1, file2):
