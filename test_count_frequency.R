@@ -1,4 +1,4 @@
-# Copyright 2014, The University of Edinburgh
+# Copyright 2014-2015, The University of Edinburgh
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License. 
@@ -65,6 +65,8 @@ test_that("Test count_frequency with a minimum token length", {
 })
 
 test_that("Test count_frequency with a missing output file name", {  
-  result <- system("count_frequency samples/events2013.dat")
+  result <- system("count_frequency samples/events2013.dat", 
+    ignore.stdout=TRUE, ignore.stderr=TRUE)
+
   expect_false(0 == result, info="Unexpected return code")
 })
