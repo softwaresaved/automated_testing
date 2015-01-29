@@ -46,31 +46,33 @@ def delete_files(dir, suffix):
       except Exception, e:
         print e
 
-# Remove any output files from previous test run.
-delete_files(".", ".dat")
+"""
+Test count_frequency.
+"""
+def test_count_frequency():
+  result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
+  assert_equal(0, result, "Unexpected return code")
+  assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
+  actual = np.loadtxt("freqs2013.dat")
+  expected = np.loadtxt("testoracle/freqs2013.dat")
+  np.testing.assert_equal(expected, actual, \
+			  "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
-print "Test frequency count"
-result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
-assert_equal(0, result, "Unexpected return code")
-assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
-assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
-            "freqs2013.dat not equal to testoracle/freqs2013.dat")
-actual = np.loadtxt("freqs2013.dat")
-expected = np.loadtxt("testoracle/freqs2013.dat")
-np.testing.assert_equal(expected, actual, \
-                        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+"""
+Test count_frequency with a minimum token length.
+"""
+def test_count_frequency_minimum_token_length():
+  result = os.system("count_frequency samples/events2013.dat freqs2013min4.dat 4")
+  assert_equal(0, result, "Unexpected return code")
+  assert_true(os.path.isfile("freqs2013min4.dat"), "Could not find freqs2013min4.dat")
+  actual = np.loadtxt("freqs2013min4.dat")
+  expected = np.loadtxt("testoracle/freqs2013min4.dat")
+  np.testing.assert_equal(expected, actual, \
+			  "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
 
-print "Test frequency count with minimum value"
-result = os.system("count_frequency samples/events2013.dat freqs2013min4.dat 4")
-assert_equal(0, result, "Unexpected return code")
-assert_true(os.path.isfile("freqs2013min4.dat"), "Could not find freqs2013min4.dat")
-assert_true(compare_files("freqs2013min4.dat", "testoracle/freqs2013min4.dat"), \
-            "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
-actual = np.loadtxt("freqs2013min4.dat")
-expected = np.loadtxt("testoracle/freqs2013min4.dat")
-np.testing.assert_equal(expected, actual, \
-                        "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
-
-print "Test frequency count with missing argument"
-result = os.system("count_frequency samples/events2013.dat")
-assert_not_equal(0, result, "Unexpected return code")
+"""
+Test count_frequency with a missing output file name.
+"""
+def test_count_frequency_missing_output_file_name():
+  result = os.system("count_frequency samples/events2013.dat")
+  assert_not_equal(0, result, "Unexpected return code")
