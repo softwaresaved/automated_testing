@@ -1,6 +1,6 @@
 # Adopting automated testing
 
-Automated tests provide a way to check that research software both produces scientifically-valid results and that it continues to do so if it is extended, refactored, optimised or tidied. But, a challenge that can face researchers, especially those with large, legacy codes, is, where to start? The prospect of having to write dozens of unit tests can be off-putting at the best of times, let alone if one has data to analyse, a paper to write or a conference to prepare for. 
+Automated tests provide a way to check that research software both produces scientifically-valid results and that it continues to do so if it is extended, refactored, optimised or tidied. But, a challenge that we can face, especially if we have large, legacy codes, is, where to start? The prospect of having to write dozens of unit tests can be off-putting at the best of times, let alone if we have data to analyse, a paper to write or a conference to prepare for. 
 
 In this guide, we provide an example of how automated testing can be adopted to give researchers the security to refactor, extend, optimise or tidy, their code, but without the overhead of having to implement dozens of unit tests at the outset. Instead of starting with [unit testing](http://en.wikipedia.org/wiki/Software_testing#Unit_testing), we start with end-to-end, or [system testing](http://en.wikipedia.org/wiki/Software_testing#System_testing). Unit testing can then be adopted at a later date, when the demands of research permit.
 
@@ -25,7 +25,7 @@ We assume that the software to be tested has the following qualities:
 * It outputs zero or more files.
 * On completion, it returns an [exit status](http://en.wikipedia.org/wiki/Exit_status) or return code to the command prompt.
 
-There are many software tools which have these qualities. We can exploit these qualities and treat the software as a standalone component, which takes some inputs (its files and command-line arguments) and produces some outputs (a return code and some output files). As we will see, in the approach we are taking to testing, the language used to implement the software e.g. C, C++, Fortran, Java, Python or R) does *not* matter.
+There are many software tools which have these qualities. We can exploit these qualities and treat the software as a standalone component, which takes some inputs (its files and command-line arguments) and produces some outputs (a return code and some output files). As we will see, in the approach we are taking to testing, the language used to implement the software - C, C++, Fortran, Java, Python or R - does *not* matter.
 
 ## Example software
 
@@ -88,9 +88,9 @@ freqs2013.dat would contain:
 
 ## Choose a language for the tests
 
-As we assume the software can be run from the command-line, in batch mode, and, as we are writing system tests, we are not restricted to using the implementation language of the software. Many languages (e.g. C, C++, Fortran, Java, Python, or shell scripts) support functions or commands that allow programs to be invoked on the command-line, return codes to be retrieved, the existence of directories and files to be verified, files to be read in line-by-line and values of various types (e.g. integers, floats, strings, booleans) to be compared.
+As we assume the software can be run from the command-line, in batch mode, and, as we are writing system tests, we are not restricted to using the implementation language of the software. Many languages (e.g. Java, Python, and R) support functions or commands that allow programs to be invoked on the command-line, return codes to be retrieved, the existence of directories and files to be verified, files to be read in line-by-line and values of various types (e.g. integers, floats, strings, booleans) to be compared.
 
-Many of these languages have associated [xUnit](http://en.wikipedia.org/wiki/XUnit) testing frameworks. For example, CUnit for C, CppUnit and googletest for C++, FRUIT for Fortran, Junit for Java (see our [Build and test examples](https://github.com/softwaresaved/build_and_test_examples)). These provide myriad features to help with the writing of tests and, despite their name, are not restricted to unit tests. These features include commands and functions to compare values of various types, checking whether certain conditions hold that are required for a test to pass, recording when tests pass or fail, and creating reports summarising test passes and failures.
+Many of these languages have associated [xUnit](http://en.wikipedia.org/wiki/XUnit) testing frameworks. For example, CUnit for C, CppUnit and googletest for C++, FRUIT for Fortran, Junit for Java (see our [Build and test examples](http://github.com/softwaresaved/build_and_test_examples)). These provide myriad features to help with the writing of tests and, despite their name, are not restricted to unit tests. These features include commands and functions to compare values of various types, checking whether certain conditions hold that are required for a test to pass, recording when tests pass or fail, and creating reports summarising test passes and failures.
 
 We can write tests in any language according to whichever criteria is important to us:
 
@@ -118,7 +118,7 @@ Python's [os.system](http://docs.python.org/2/library/os.html#os.system) functio
 
     os.system("count_frequency samples/events2013.dat freqs2013.dat")
 
-We can run this and so run the software, as follows:
+We can run this, and so run the software, as follows:
 
     python test_counts.py
 
@@ -155,11 +155,11 @@ This is about the simplest test we can run with the software - if we give it val
 
 ## Write code that checks that the output files are equal to those of the test oracle
 
-The above tests can help us to check, when working with our software, that we haven't introduced any drastic errors but it would be better if we actually checked the content of those output files to ensure that, when making our changes, we don't corrupt the behaviour of the software and it doesn't start to output nonsense in its output files. Under Linux/Unix shell we could use the diff command (with its -q flag to suppress its output) e.g.
+The above tests can help us to check, when working with our software, that we haven't introduced any drastic errors but it would be better if we actually checked the content of those output files to ensure that, when making our changes, we don't corrupt the behaviour of the software and it doesn't start to output nonsense in its output files. Under Linux/Unix shell we could use the diff command (with its -q flag to suppress its output):
 
     result = os.system("diff -q freqs2013.dat testoracle/freqs2013.dat")
 
-For Windows could use the Windows DOS fc (file compare) command (using > NUL to suppress its output) e.g.
+For Windows could use the Windows DOS fc (file compare) command (using > NUL to suppress what it prints out):
 
     result = os.system("fc freqs2013.dat testoracle/freqs2013.dat > NUL")
 
@@ -184,16 +184,16 @@ While this approach works, it does make our test code operating system dependant
     assert_equal(0, result, "Unexpected return code")
     assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
     assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
-      "freqs2013.dat not equal to testoracle/freqs2013.dat")
+        "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
 Even if we don't care about cross-platform portability, there are other good reasons why we should write code to check the correctness of our output files against the test oracle.
 
 ## Let the language work for us
 
-Some languages have libraries that save us from having to write some, or all, of our file comparison code. For example, Python's scientific computing library, [numpy](http://www.numpy.org/) consists of functions that allow numerical data files to be compared for equality. So we can replace:
+Some languages have libraries that save us from having to write some, or all, of our file comparison code. For example, Python's scientific computing library, [numpy](http://www.numpy.org/), has functions that allow numerical data files to be compared for equality. So we can replace:
 
     assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
-      "freqs2013.dat not equal to testoracle/freqs2013.dat")
+        "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
 with:
 
@@ -202,19 +202,19 @@ with:
     actual = np.loadtxt("freqs2013.dat")
     expected = np.loadtxt("testoracle/freqs2013.dat")
     np.testing.assert_equal(expected, actual, \
-      "freqs2013.dat not equal to testoracle/freqs2013.dat")
+        "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
-[numpy.loadtxt](http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html) loads a file assumed to contain numerical data. It skips the lines beginning with # by default, as it treats these as comments. [numpy.testing.assert_equal](http://docs.scipy.org/doc/numpy/reference/generated/numpy.testing.assert_equal.html) checks that the given data is equal in its dimensions (e.g. number of rows and columns) and its values.
+[numpy.loadtxt](http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html) loads a file assumed to contain numerical data. It skips the lines beginning with #, as it treats these as comments. [numpy.testing.assert_equal](http://docs.scipy.org/doc/numpy/reference/generated/numpy.testing.assert_equal.html) checks that the given data is equal in its dimensions (e.g. number of rows and columns) and its values.
 
 ## Exploit knowledge about the output data
 
-Another advantage of checking our output files against our test oracle in-code is we can implement checks that exploit the knowledge of the data and how it is structured. For example, if our output data files included a time-stamp recording information about when the data was created e.g.
+Another advantage of checking our output files against our test oracle in-code is we can implement checks that exploit the knowledge of the data and how it is structured. For example, suppose our output data files included a time-stamp recording information about when the data was created:
 
     DateCreated: 2015-28-01 17:34
 
-then we'd want to exclude this from our comparisons with the output files in our test oracle, which would most likely have different time-stamps. Instead, we would check for the existence of this      DateCreated entry in the output files, and check that its value is a valid time-stamp.
+We'd want to exclude this from our comparisons with the output files in our test oracle, which would most likely have different time-stamps. Instead, we would check for the existence of this      DateCreated entry in the output files, and check that its value is a valid time-stamp.
 
-### Decide what it means for output files to be equal
+## Decide what it means for output files to be equal
 
 We may wish to distinguish between the form and content of our files. For example, the two [JSON](http://www.json.org/) files [json/machine_readable.jsn](./json/machine_readable.jsn) and [json/human_readable.jsn](./json/human_readable.jsn) contain the same information, only one is formatted to be more readable by us. That they are semantically equivalent can be seem if we load them into Python. We can create an interactive Python session and import Python's [json](https://docs.python.org/2/library/json.html) library:
 
@@ -226,7 +226,12 @@ Then we can load the files and copy their contents into strings:
     >>> machine=open("json/machine_readable.jsn").read()
     >>> human=open("json/human_readable.jsn").read()
     
-The [json.loads](https://docs.python.org/2/library/json.html#json.loads) function can parse these strings into a Python data structure called a [dictionary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries)):
+If we compare the strings, we see they are not equal:
+
+    >>> human == machine
+    False
+
+The [json.loads](https://docs.python.org/2/library/json.html#json.loads) function can parse these strings into a Python data structure called a [dictionary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries):
    
     >>> machine_json=json.loads(machine)
     >>> human_json=json.loads(human)
@@ -240,9 +245,9 @@ And, if we now compare the dictionaries, we see they are equal:
     >>> machine_json == human_json
     True
 
-If our test oracle contained machine readable versions of files, and we refactored our software, to output the data files in a more human-readable format by introducing white-space and newlines, then we want our automated tests to still view these files as equivalent since their content is identical, only their presentation has changed. In the above example, json.loads takes care of that for us, parsing the files into a data structure for us. In other situations, we may have to write the code that parses the files in such a way that we can compare their contents.
+If we refactor software to output data files in a more human-readable format by introducing white-space and newlines, then we want our automated tests to view these files as equivalent to their non-human readable counterparts, since their content is identical, only their presentation has changed. In the above example, json.loads takes care of that for us, parsing the files into a data structure for us. In other situations, we may have to write the code that parses the files in such a way that we can compare their contents.
 
-### Equality in a floating point world
+## Equality in a floating point world
 
 Even if we do our checks in-code using numpy, as above, it is important to remember that computers don't do floating point computations that well. For example, consider this short Python session:
 
@@ -299,7 +304,7 @@ Using these functions we could load in our output file and our test oracle file 
     Arrays are not almost equal to 3 decimals
     >>> np.testing.assert_almost_equal(expected, actual, decimal=2)
 
-numpy also provides [numpy.testing.assert_allclose](http://docs.scipy.org/doc/numpy/reference/generated/numpy.testing.assert_allclose.html) which provides an alternative way of calculating "almost equality":
+numpy also provides [numpy.testing.assert_allclose](http://docs.scipy.org/doc/numpy/reference/generated/numpy.testing.assert_allclose.html) which provides an alternative way of calculating "almost equality" (each function's documentation explains the different approaches they take to comparing floating point numbers):
 
     >>> np.testing.assert_allclose(expected, actual, rtol=0, atol=1e-3)
     Not equal to tolerance rtol=0, atol=0.001
@@ -307,29 +312,29 @@ numpy also provides [numpy.testing.assert_allclose](http://docs.scipy.org/doc/nu
 
 For more on the issues of testing and floating point numbers, see [Software Carpentry](http://software-carpentry.org/)'s [Testing: Floating Point](http://software-carpentry.org/v4/test/float.html) lesson.
 
-So, with this in mind, could change our comparison in test_counts.py from:
+So, with this in mind, we should change our comparison in test_counts.py from:
 
     np.testing.assert_equal(expected, actual, \
-      "freqs2013.dat not equal to testoracle/freqs2013.dat")
+        "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
 to:
 
     np.testing.assert_almost_equal(expected, actual, 2, 
-      "freqs2013.dat not equal to testoracle/freqs2013.dat")
+        "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
 This helps to ensure that our tests will not suddenly fail if any refactorings result in subtle changes in floating point values within output files.
 
-What is a suitable threshold for equality? That depends upon the doman, and the research being undertaken. For some fields, rounding to the nearest whole number may be acceptable. For others, far greater precision may be required.
+What is a suitable threshold for equality? That depends upon the domain, and the research being undertaken. For some fields, rounding to the nearest whole number may be acceptable. For others, far greater precision may be required.
 
 ## Add more tests
 
-We now have a system, or end-to-end, test. Ideally, we'd want to add some (a lot!) moretests. For example, to test count_frequency with a minimum token length:
+We now have a system, or end-to-end, test. Ideally, we'd want to add some (a lot!) more tests. For example, to test count_frequency with a minimum token length:
 
     result = os.system("count_frequency samples/events2013.dat freqs2013_5.dat 5")
     assert_equal(0, result, "Unexpected return code")
     assert_true(os.path.isfile("freqs2013_5.dat"), "Could not find freqs2013_5.dat")
     np.testing.assert_almost_equal(expected, actual, 2, 
-      "freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
+        "freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
 
 Another type of system test we can do is to check what happens when our software is not given valid inputs. For example, if we do not provide an output file name to count_frequency then a non-zero return code is expected:
 
@@ -348,7 +353,9 @@ Up to now our test code is just a sequence of commands. We can exploit language-
 
     def test_count_frequency_missing_output_file_name():
 
-Test frameworks have conventions which, if test code conforms to these conventions, allows the test code to access the full power of the test framework. For example, nose comes with a command-line tool, nosetests, which looks for functions prefixed by "test_", runs these test functions and reports on the results. [test_count_frequency.py](./tests/test_count_frequency.py) has a modularised set of test functions and can be run, using nosetests, as follows:
+Test frameworks have conventions which, if test code conforms to these conventions, allows the test code to access the full power of the test framework. For example, nose comes with a command-line tool, nosetests, which looks for functions prefixed by "test_", runs these test functions and reports on the results.
+
+[test_count_frequency.py](./test_count_frequency.py) has a modularised set of test functions and can be run, using nosetests, as follows:
 
     nosetests test_count_frequency.py
     ..Usage: python count_frequency.py INPUT_FILE OUTPUT_FILE [MINIMUM_LENGTH]
@@ -358,34 +365,39 @@ Test frameworks have conventions which, if test code conforms to these conventio
 
     OK
 
-nosetests prints a "." for each test function that runs and passes.
+nosetests prints a `.` for each test function that runs and passes.
 
-Many xUnit test frameworks provide these capabilities so long as tests are written in a certain way. For example, in FRUIT for Fortran one writes test subroutines e.g.
+Many xUnit test frameworks provide these capabilities so long as tests are written in a certain way. For example, in FRUIT for Fortran one writes test subroutines:
 
     subroutine test_count_frequency()
 
-In JUnit for Java one defines test classes (e.g. FrequencyCountTest) and marks up test methods with annotations e.g.
+In JUnit for Java one defines test classes  and marks up test methods with annotations:
 
-    @Test
-    public void testCountFrequency()
+    import org.junit.Test;
 
-See our repository [Build and test examples](https://github.com/softwaresaved/build_and_test_examples) for examples of test code written for the test frameworks of various languages.
+    public class CountFrequencyTest 
+    {
+
+        @Test
+        public void testCountFrequency() 
+        {
+            ...
+        }
+    }
+
+See our [Build and test examples](http://github.com/softwaresaved/build_and_test_examples) for examples of test code written for the test frameworks of various languages.
 
 ## Examples in other languages
 
-As an example of how the same approach can be used with other language, two other examples are available. These expect a testoracle directory to have been created as we described earlier, and these implement the same tests as our Python example.
+As an example of how the same approach can be used with other languages, two other examples are available. These expect a testoracle directory to have been created as we described earlier, and these implement the same tests as our Python example.
 
-[test_count_frequency.sh](./test_count_frequency.sh) provides an example of automated tests written as a bash shell script. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle (though only a naive comparison using the diff command is adopted). 
-
-If you have Linux/Unix then you can run this as follows:
+[test_count_frequency.sh](./test_count_frequency.sh) provides an example of automated tests written as a bash shell script. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle (though only a naive comparison using the diff command is used). If you have Linux/Unix then you can run this as follows:
 
     ./test_count_frequency.sh
 
-[test_count_frequency.R](./test_count_frequency.R) provides an example of automated tests written as a bash shell script. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle. It uses the [testthat](http://cran.r-project.org/web/packages/testthat/index.html) test framework for R.
-
-If you have R and have installed the testthat library, then you can run this on Windows as follows:
+[test_count_frequency.R](./test_count_frequency.R) provides an example of automated tests written in R. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle. It uses R's [testthat](http://cran.r-project.org/web/packages/testthat/index.html) test framework. If you have R and have installed the testthat library, then you can run this on Windows as follows:
  
-    C:\Programs\R\R-3.1.0\bin\Rscript.exe testthat.R
+    C:\Program Files\R\R-3.1.0\bin\Rscript.exe testthat.R
 
 You can run this on Linux/Unix as follows:
 
@@ -393,7 +405,7 @@ You can run this on Linux/Unix as follows:
 
 ## Conclusion
 
-Automated testing can give researchers the security to refactor, extend, optimise or tidy, their code. The approach presented in this guide suggests a way that researchers can introduce automated testing for their software without the overhead of having to implement dozens of unit tests at the outset. 
+Automated testing can give us the security to refactor, extend, optimise or tidy, their code. The approach presented in this guide suggests a way that we can introduce automated testing for our software without the overhead of having to implement dozens of unit tests at the outset. 
 
 This approach is also useful for developers recruited onto research projects, who know how to design, develop, refactor and optimise software but may lack the domain knowledge required to validate that the outputs are scientifically correct. So long as a researcher has validated the outputs used to create the test oracle, the developer can refactor, optimise and tidy the software, with some confidence that they are not undermining its scientific validity.
 
