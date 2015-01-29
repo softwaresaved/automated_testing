@@ -1,6 +1,6 @@
 # Adopting automated testing
 
-Automated tests provide a way to check that research software both produces scientifically-valid results and that it continues to do so if it is extended, refactored, optimised or tidied. But, a challenge that can face researchers, especially those with large, legacy codes, is, where to start? The propspect of having to write dozens of unit tests can be off-putting at the best of times, let alone if one has a data to analyse, a paper to write or a conference to prepare for. 
+Automated tests provide a way to check that research software both produces scientifically-valid results and that it continues to do so if it is extended, refactored, optimised or tidied. But, a challenge that can face researchers, especially those with large, legacy codes, is, where to start? The prospect of having to write dozens of unit tests can be off-putting at the best of times, let alone if one has data to analyse, a paper to write or a conference to prepare for. 
 
 In this guide, we provide an example of how automated testing can be adopted to give researchers the security to refactor, extend, optimise or tidy, their code, but without the overhead of having to implement dozens of unit tests at the outset. Instead of starting with [unit testing](http://en.wikipedia.org/wiki/Software_testing#Unit_testing), we start with end-to-end, or [system testing](http://en.wikipedia.org/wiki/Software_testing#System_testing). Unit testing can then be adopted at a later date, when the demands of research permit.
 
@@ -10,12 +10,12 @@ Our approach to introducing automated testing is to first run the software to be
 
 We then write automated tests that:
 
-* Runs the software for a set of input files and command-line arguments.
-* Checks the return code for the software to check it exited without any errors.
-* Checks that the expected output files were created.
-* Checks that the output files are equal to those of the test oracle that were created using the same combination of input files and command-line arguments.
+* Run the software for a set of input files and command-line arguments.
+* Check the software's return code to see that it exited without any errors.
+* Check that the expected output files were created.
+* Check that the output files are equal to those of the test oracle that were created using the same combination of input files and command-line arguments.
 
-### Assumptions about the software to be tested
+## Assumptions about the software to be tested
 
 We assume that the software to be tested has the following qualities:
 
@@ -27,7 +27,7 @@ We assume that the software to be tested has the following qualities:
 
 There are many software tools which have these qualities. We can exploit these qualities and treat the software as a standalone component, which takes some inputs (its files and command-line arguments) and produces some outputs (a return code and some output files). As we will see, in the approach we are taking to testing, the language used to implement the software e.g. C, C++, Fortran, Java, Python or R) does *not* matter.
 
-### Example software
+## Example software
 
 As an example, we will write automated tests for software that calculates the frequency of tokens (numbers or words) within a text file.
 
