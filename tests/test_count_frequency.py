@@ -62,13 +62,13 @@ def test_count_frequency():
 Test count_frequency with a minimum token length.
 """
 def test_count_frequency_minimum_token_length():
-  result = os.system("count_frequency samples/events2013.dat freqs2013min4.dat 4")
+  result = os.system("count_frequency samples/events2013.dat freqs2013_5.dat 5")
   assert_equal(0, result, "Unexpected return code")
-  assert_true(os.path.isfile("freqs2013min4.dat"), "Could not find freqs2013min4.dat")
-  actual = np.loadtxt("freqs2013min4.dat")
-  expected = np.loadtxt("testoracle/freqs2013min4.dat")
+  assert_true(os.path.isfile("freqs2013_5.dat"), "Could not find freqs2013_5.dat")
+  actual = np.loadtxt("freqs2013_5.dat")
+  expected = np.loadtxt("testoracle/freqs2013_5.dat")
   np.testing.assert_almost_equal(expected, actual, 2, \
-                                 "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
+                                 "freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
 
 """
 Test count_frequency with a missing output file name.
