@@ -66,18 +66,18 @@ check_return_code_not_ok() {
 # Remove any output files from previous test run.
 rm -f *.dat
 
-echo "Test frequency count"
+echo "Test count_frequency"
 count_frequency samples/events2013.dat freqs2013.dat
 check_return_code_ok $?
 check_file_exists freqs2013.dat
 check_files_equal freqs2013.dat testoracle/freqs2013.dat
 
-echo "Test frequency count with minimum value"
+echo "Test count_frequency with minimum token length"
 count_frequency samples/events2013.dat freqs2013min4.dat 4
 check_return_code_ok $?
 check_file_exists freqs2013min4.dat
 check_files_equal freqs2013min4.dat testoracle/freqs2013min4.dat
 
-echo "Test frequency count with missing argument"
+echo "Test count_frequency with missing output file name"
 count_frequency samples/events2013.dat
 check_return_code_not_ok $?
