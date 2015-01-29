@@ -55,8 +55,8 @@ def test_count_frequency():
   assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
   actual = np.loadtxt("freqs2013.dat")
   expected = np.loadtxt("testoracle/freqs2013.dat")
-  np.testing.assert_equal(expected, actual, \
-			  "freqs2013.dat not equal to testoracle/freqs2013.dat")
+  np.testing.assert_almost_equal(expected, actual, 2, \
+                                 "freqs2013.dat not equal to testoracle/freqs2013.dat")
 
 """
 Test count_frequency with a minimum token length.
@@ -67,8 +67,8 @@ def test_count_frequency_minimum_token_length():
   assert_true(os.path.isfile("freqs2013min4.dat"), "Could not find freqs2013min4.dat")
   actual = np.loadtxt("freqs2013min4.dat")
   expected = np.loadtxt("testoracle/freqs2013min4.dat")
-  np.testing.assert_equal(expected, actual, \
-			  "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
+  np.testing.assert_almost_equal(expected, actual, 2, \
+                                 "freqs2013min4.dat not equal to testoracle/freqs2013min4.dat")
 
 """
 Test count_frequency with a missing output file name.
