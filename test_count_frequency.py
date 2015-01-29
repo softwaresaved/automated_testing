@@ -12,13 +12,6 @@
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-import numpy as np
-import os
-import os.path
-from nose.tools import assert_equal
-from nose.tools import assert_not_equal
-from nose.tools import assert_true
-
 """
 count_frequency tests
 
@@ -32,6 +25,13 @@ These tests expect:
   - freqs2013_5.dat created via 
     count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
 """
+
+import numpy as np
+import os
+import os.path
+from nose.tools import assert_equal
+from nose.tools import assert_not_equal
+from nose.tools import assert_true
 
 """
 Compare two files, line by line, for equality.
