@@ -20,15 +20,16 @@ These tests expect:
 - Input files to be in a samples/ directory:
   - events2013.dat
 - Test oracle files to be in a testoracle/ directory:
-  - freqs2013.dat created via 
-    count_frequency samples/events2013.dat testoracle/freqs2013.dat
-  - freqs2013_5.dat created via 
-    count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
+  - freqs_events2013.dat created via 
+    count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
+  - freqs5_events2013.dat created via 
+    count_frequency samples/events2013.dat testoracle/freqs_events2013.dat 5
 """
 
 import numpy as np
 import os
 import os.path
+import subprocess
 from nose.tools import assert_equal
 from nose.tools import assert_not_equal
 from nose.tools import assert_true
@@ -64,29 +65,29 @@ def delete_files(dir, suffix):
 Test count_frequency.
 """
 def test_count_frequency():
-  result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
+  result = subprocess.call("count_frequency samples/events2013.dat freqs_events2013.dat", shell=True)
   assert_equal(0, result, "Unexpected return code")
-  assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
-  actual = np.loadtxt("freqs2013.dat")
-  expected = np.loadtxt("testoracle/freqs2013.dat")
+  assert_true(os.path.isfile("freqs_events2013.dat"), "Could not find freqs_events2013.dat")
+  actual = np.loadtxt("freqs_events2013.dat")
+  expected = np.loadtxt("testoracle/freqs_events2013.dat")
   np.testing.assert_almost_equal(expected, actual, 2, \
-                                 "freqs2013.dat not equal to testoracle/freqs2013.dat")
+                                 "freqs_events2013.dat not equal to testoracle/freqs_events2013.dat")
 
 """
 Test count_frequency with a minimum token length.
 """
 def test_count_frequency_minimum_token_length():
-  result = os.system("count_frequency samples/events2013.dat freqs2013_5.dat 5")
+  result = subprocess.call("count_frequency samples/events2013.dat freqs5_events2013.dat 5", shell=True)
   assert_equal(0, result, "Unexpected return code")
-  assert_true(os.path.isfile("freqs2013_5.dat"), "Could not find freqs2013_5.dat")
-  actual = np.loadtxt("freqs2013_5.dat")
-  expected = np.loadtxt("testoracle/freqs2013_5.dat")
+  assert_true(os.path.isfile("freqs5_events2013.dat"), "Could not find freqs5_events2013.dat")
+  actual = np.loadtxt("freqs5_events2013.dat")
+  expected = np.loadtxt("testoracle/freqs5_events2013.dat")
   np.testing.assert_almost_equal(expected, actual, 2, \
-                                 "freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
+                                 "freqs5_events2013.dat not equal to testoracle/freqs5_events2013.dat")
 
 """
 Test count_frequency with a missing output file name.
 """
 def test_count_frequency_missing_output_file_name():
-  result = os.system("count_frequency samples/events2013.dat")
+  result = subprocess.call("count_frequency samples/events2013.dat", shell=True)
   assert_not_equal(0, result, "Unexpected return code")
