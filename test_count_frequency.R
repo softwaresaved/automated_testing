@@ -24,10 +24,10 @@
 # - Input files to be in a samples/ directory:
 #   - events2013.dat
 # - Test oracle files to be in a testoracle/ directory:
-#   - freqs2013.dat created via 
-#     count_frequency samples/events2013.dat testoracle/freqs2013.dat
-#   - freqs2013_5.dat created via 
-#     count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
+#   - freqs_events2013.dat created via 
+#     count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
+#   - freqs5_events2013.dat created via 
+#     count_frequency samples/events2013.dat testoracle/freqs_events2013.dat 5
 
 library(testthat)
 
@@ -36,37 +36,34 @@ test.tolerance <- 1e-2
 context("count_frequency tests")
 
 test_that("Test count_frequency", {
-  
-  result <- system("count_frequency samples/events2013.dat freqs2013.dat")
+  result <- system2("count_frequency", "samples/events2013.dat freqs_events2013.dat")
   expect_equal(0, result, info="Unexpected return code")
-  expect_true(file.exists("freqs2013.dat"), info="Could not find freqs2013.dat")
-  expected <- read.table("testoracle/freqs2013.dat", stringsAsFactors=FALSE, 
+  expect_true(file.exists("freqs_events2013.dat"), info="Could not find freqs_events2013.dat")
+  expected <- read.table("testoracle/freqs_events2013.dat", stringsAsFactors=FALSE, 
                          colClasses=("numeric"))
-  actual <- read.table("freqs2013.dat", stringsAsFactors=FALSE, 
+  actual <- read.table("freqs_events2013.dat", stringsAsFactors=FALSE, 
                        colClasses=("numeric"))
   expect_equivalent(dim(expected), dim(actual),
-    info="Dimensions of freqs2013.dat not equal to testoracle/freqs2013.dat")
+    info="Dimensions of freqs_events2013.dat not equal to testoracle/freqs_events2013.dat")
   expect_equal(expected, actual, tolerance=test.tolerance,
-    info="freqs2013.dat not equal to testoracle/freqs2013.dat")
+    info="freqs_events2013.dat not equal to testoracle/freqs_events2013.dat")
 })
 
 test_that("Test count_frequency with a minimum token length", {
-  result <- system("count_frequency samples/events2013.dat freqs2013_5.dat 5")
+  result <- system2("count_frequency", "samples/events2013.dat freqs5_events2013.dat 5")
   expect_equal(0, result, info="Unexpected return code")
-  expect_true(file.exists("freqs2013_5.dat"), info="Could not find freqs2013_5.dat")
-  expected <- read.table("testoracle/freqs2013_5.dat", stringsAsFactors=FALSE, 
+  expect_true(file.exists("freqs5_events2013.dat"), info="Could not find freqs5_events2013.dat")
+  expected <- read.table("testoracle/freqs5_events2013.dat", stringsAsFactors=FALSE, 
                          colClasses=("numeric"))
-  actual <- read.table("freqs2013_5.dat", stringsAsFactors=FALSE, 
+  actual <- read.table("freqs5_events2013.dat", stringsAsFactors=FALSE, 
                        colClasses=("numeric"))
   expect_equivalent(dim(expected), dim(actual),
-    info="Dimensions of freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
+    info="Dimensions of freqs5_events2013.dat not equal to testoracle/freqs5_events2013.dat")
   expect_equal(expected, actual, tolerance=test.tolerance,
-    info="freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
+    info="freqs5_events2013.dat not equal to testoracle/freqs5_events2013.dat")
 })
 
 test_that("Test count_frequency with a missing output file name", {  
-  result <- system("count_frequency samples/events2013.dat", 
-    ignore.stdout=TRUE, ignore.stderr=TRUE)
-
+  result <- system2("count_frequency", "samples/events2013.dat")
   expect_false(0 == result, info="Unexpected return code")
 })
