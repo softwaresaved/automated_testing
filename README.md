@@ -112,11 +112,13 @@ We will first create a test oracle. We can create a directory, testoracle, then 
 
 ## Write code that runs the software
 
-Python's [os.system](http://docs.python.org/2/library/os.html#os.system) function allows commands to be passed to the operating system and run. So, we can run software from the command-line by creating a file, test_counts.py, and adding the following to it:
+Python's [subprocess.call](https://docs.python.org/2/library/subprocess.html#subprocess.call) function allows commands to be passed to the operating system and run. So, we can run software from the command-line by creating a file, test_counts.py, and adding the following to it:
 
-    import os
+    import subprocess
 
-    os.system("count_frequency samples/events2013.dat freqs2013.dat")
+    subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
+
+shell=True instructs subprocess to pass the command directly to the operating system.
 
 We can run this, and so run the software, as follows:
 
@@ -124,12 +126,12 @@ We can run this, and so run the software, as follows:
 
 ## Write code that checks the return code
 
-os.system returns the return code from the system call which can then be checked. Linux/Unix and Windows both adopt the convention that a return code of 0 means that the command exited OK and non-zero indicates an error. So, we can check that this is the case:
+subprocess.call returns the return code from the system call which can then be checked. Linux/Unix and Windows both adopt the convention that a return code of 0 means that the command exited OK and non-zero indicates an error. So, we can check that this is the case:
 
-    import os
+    import subprocess
     from nose.tools import assert_equal
 
-    result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
+    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
     assert_equal(0, result, "Unexpected return code")
 
 Here, we use Python's nose.tools.assert_equal function (which, behind the scenes just calls, [unittest.TestCase.assertEqual](https://docs.python.org/2/library/unittest.html#unittest.TestCase.assertEqual)). This function compares two values for equality and if they are not equal prints the given message.
@@ -138,12 +140,12 @@ Here, we use Python's nose.tools.assert_equal function (which, behind the scenes
 
 Python's [os.path.isfile](https://docs.python.org/2/library/os.path.html#os.path.isfile) function checks if a file exists. So, we can check that the expected output file now exists:
 
-    import os
     import os.path
+    import subprocess
     from nose.tools import assert_equal
     from nose.tools import assert_true
     
-    result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
+    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
     assert_equal(0, result, "Unexpected return code")
     assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
 
@@ -157,11 +159,11 @@ This is about the simplest test we can run with the software - if we give it val
 
 The above tests can help us to check, when working with our software, that we haven't introduced any drastic errors but it would be better if we actually checked the content of those output files to ensure that, when making our changes, we don't corrupt the behaviour of the software and it doesn't start to output nonsense in its output files. Under Linux/Unix shell we could use the diff command (with its -q flag to suppress its output):
 
-    result = os.system("diff -q freqs2013.dat testoracle/freqs2013.dat")
+    result = subprocess.call("diff -q freqs2013.dat testoracle/freqs2013.dat", shell=True)
 
 For Windows could use the Windows DOS fc (file compare) command (using > NUL to suppress what it prints out):
 
-    result = os.system("fc freqs2013.dat testoracle/freqs2013.dat > NUL")
+    result = subprocess.call("fc freqs2013.dat testoracle/freqs2013.dat > NUL", shell=True)
 
 We could then check the return code from the comparison:
 
@@ -180,7 +182,7 @@ While this approach works, it does make our test code operating system dependant
       f2.close()
       return True
 
-    result = os.system("count_frequency samples/events2013.dat freqs2013.dat")
+    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
     assert_equal(0, result, "Unexpected return code")
     assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
     assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
@@ -330,7 +332,7 @@ What is a suitable threshold for equality? That depends upon the domain, and the
 
 We now have a system, or end-to-end, test. Ideally, we'd want to add some (a lot!) more tests. For example, to test count_frequency with a minimum token length:
 
-    result = os.system("count_frequency samples/events2013.dat freqs2013_5.dat 5")
+    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat 5", shell=True)
     assert_equal(0, result, "Unexpected return code")
     assert_true(os.path.isfile("freqs2013_5.dat"), "Could not find freqs2013_5.dat")
     np.testing.assert_almost_equal(expected, actual, 2, 
@@ -340,7 +342,7 @@ Another type of system test we can do is to check what happens when our software
 
     from nose.tools import assert_not_equal
 
-    result = os.system("count_frequency samples/events2013.dat")
+    result = subprocess.call("count_frequency samples/events2013.dat", shell=True)
     assert_not_equal(0, result, "Unexpected return code")
 
 ## Clean up the test code
