@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright 2014-2015, The University of Edinburgh.
 #
@@ -21,9 +21,9 @@
 # - Input files to be in a samples/ directory:
 #   - events2013.dat
 # - Test oracle files to be in a testoracle/ directory:
-#   - freqs2013.dat created via 
+#   - freqs2013.dat created via
 #     count_frequency samples/events2013.dat testoracle/freqs2013.dat
-#   - freqs2013_5.dat created via 
+#   - freqs2013_5.dat created via
 #     count_frequency samples/events2013.dat testoracle/freqs2013.dat 5
 
 # $1 - file to check existence for.
@@ -79,16 +79,16 @@ check_return_code_not_ok() {
 rm -f *.dat
 
 echo "Test count_frequency"
-count_frequency samples/events2013.dat freqs2013.dat
+count_frequency samples/events2013.dat freqs_events2013.dat
 check_return_code_ok $?
-check_file_exists freqs2013.dat
-check_files_equal freqs2013.dat testoracle/freqs2013.dat
+check_file_exists freqs_events2013.dat
+check_files_equal freqs_events2013.dat testoracle/freqs_events2013.dat
 
 echo "Test count_frequency with minimum token length"
-count_frequency samples/events2013.dat freqs2013_5.dat 5
+count_frequency samples/events2013.dat freqs5_events2013.dat 5
 check_return_code_ok $?
-check_file_exists freqs2013_5.dat
-check_files_equal freqs2013_5.dat testoracle/freqs2013_5.dat
+check_file_exists freqs5_events2013.dat
+check_files_equal freqs5_events2013.dat testoracle/freqs5_events2013.dat
 
 echo "Test count_frequency with missing output file name"
 count_frequency samples/events2013.dat
