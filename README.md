@@ -60,9 +60,9 @@ followed by N rows, one row per each token in INPUT_FILE, each row consisting of
 
 For example, if we run:
 
-    count_frequency samples/events2013.dat freqs2013.dat
+    count_frequency samples/events2013.dat freqs_events2013.dat
 
-freqs2013.dat would contain:
+freqs_events2013.dat would contain:
 
     # Frequency data
     # Format: token count percentage
@@ -78,9 +78,9 @@ freqs2013.dat would contain:
 
 If an additional numerical command-line argument is given then only tokens of length equal to or greater than that value are considered. For example, if we run:
 
-    count_frequency samples/events2013.dat freqs2013.dat 5
+    count_frequency samples/events2013.dat freqs5_events2013.dat 5
 
-freqs2013.dat would contain:
+freqs5_events2013.dat would contain:
 
     # Frequency data
     # Format: token count percentage
@@ -104,11 +104,8 @@ In our example, we'll use Python as it does not need to be compiled and is compl
 
 We will first create a test oracle. We can create a directory, testoracle, then run count_frequency on valid inputs and populate testoracle with the corresponding outputs. For example:
 
-    count_frequency samples/events2013.dat testoracle/freqs2013.dat
-    count_frequency samples/events2013.dat testoracle/freqs2013_5.dat 5
-    count_frequency samples/events2014.dat testoracle/freqs2014.dat
-    count_frequency samples/events2014.dat testoracle/freqs2014_5.dat 5
-    count_frequency samples/events2015.dat testoracle/freqs2015.dat
+    count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
+    count_frequency samples/events2013.dat testoracle/freqs5_events2013.dat 5
 
 ## Write code that runs the software
 
@@ -116,7 +113,8 @@ Python's [subprocess.call](https://docs.python.org/2/library/subprocess.html#sub
 
     import subprocess
 
-    subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+    subprocess.call(cmd, shell=True)
 
 shell=True instructs subprocess to pass the command directly to the operating system.
 
@@ -131,7 +129,8 @@ subprocess.call returns the return code from the system call which can then be c
     import subprocess
     from nose.tools import assert_equal
 
-    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+    result = subprocess.call(cmd, shell=True)
     assert_equal(0, result, "Unexpected return code")
 
 Here, we use Python's nose.tools.assert_equal function (which, behind the scenes just calls, [unittest.TestCase.assertEqual](https://docs.python.org/2/library/unittest.html#unittest.TestCase.assertEqual)). This function compares two values for equality and if they are not equal prints the given message.
@@ -145,9 +144,11 @@ Python's [os.path.isfile](https://docs.python.org/2/library/os.path.html#os.path
     from nose.tools import assert_equal
     from nose.tools import assert_true
     
-    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+    result = subprocess.call(cmd, shell=True)
     assert_equal(0, result, "Unexpected return code")
-    assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
+    assert_true(os.path.isfile("freqs_events2013.dat"),
+                "Could not find freqs_events2013.dat")
 
 Here, we use Python's nose.tools.assert_true function (which, behind the scenes just calls, [unittest.TestCase.assertTrue](https://docs.python.org/2/library/unittest.html#unittest.TestCase.assertTrue)). This function checks a boolean value and if it is false prints the given message.
 
@@ -159,34 +160,39 @@ This is about the simplest test we can run with the software - if we give it val
 
 The above tests can help us to check, when working with our software, that we haven't introduced any drastic errors but it would be better if we actually checked the content of those output files to ensure that, when making our changes, we don't corrupt the behaviour of the software and it doesn't start to output nonsense in its output files. Under Linux/Unix shell we could use the diff command (with its -q flag to suppress its output):
 
-    result = subprocess.call("diff -q freqs2013.dat testoracle/freqs2013.dat", shell=True)
+    cmd = "diff -q freqs_events2013.dat testoracle/freqs_events2013.dat"
+    result = subprocess.call(cmd, shell=True)
 
 For Windows could use the Windows DOS fc (file compare) command (using > NUL to suppress what it prints out):
 
-    result = subprocess.call("fc freqs2013.dat testoracle/freqs2013.dat > NUL", shell=True)
+    cmd = "fc freqs_events2013.dat testoracle/freqs_events2013.dat > NUL"
+    result = subprocess.call(cmd, shell=True)
 
 We could then check the return code from the comparison:
 
-    assert_equal(0, result, "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    assert_equal(0, result, "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 While this approach works, it does make our test code operating system dependant. We can make it more portable by comparing the files within the language in which we are writing our tests. We can add a function that compares two files line-by-line:
 
-    def compare_files(file1, file2):
-      with open(file1) as f1, open(file2) as f2:
-        for line1, line2 in zip(f1, f2):
-          if line1 != line2:
-            f1.close()
-            f2.close()
-            return False
-      f1.close()
-      f2.close()
+  def compare_files(file_name1, file_name2):
+      with open(file_name1) as file1, open(file_name2) as file2
+:
+          for line1, line2 in zip(file1, file2):
+              if line1 != line2:
+                  file1.close()
+                  file2.close()
+                  return False
+      file1.close()
+      file2.close()
       return True
 
-    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat", shell=True)
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+    result = subprocess.call(cmd, shell=True)
     assert_equal(0, result, "Unexpected return code")
-    assert_true(os.path.isfile("freqs2013.dat"), "Could not find freqs2013.dat")
-    assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
-        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    assert_true(os.path.isfile("freqs_events2013.dat"),
+                "Could not find freqs_events2013.dat")
+    assert_true(compare_files("freqs_events2013.dat", "testoracle/freqs_events2013.dat"),
+                "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 Even if we don't care about cross-platform portability, there are other good reasons why we should write code to check the correctness of our output files against the test oracle.
 
@@ -194,17 +200,18 @@ Even if we don't care about cross-platform portability, there are other good rea
 
 Some languages have libraries that save us from having to write some, or all, of our file comparison code. For example, Python's scientific computing library, [numpy](http://www.numpy.org/), has functions that allow numerical data files to be compared for equality. So we can replace:
 
-    assert_true(compare_files("freqs2013.dat", "testoracle/freqs2013.dat"), \
-        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    assert_true(compare_files("freqs_events2013.dat", "testoracle/freqs_events2013.dat"),
+                "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 with:
 
     import numpy as np
 
-    actual = np.loadtxt("freqs2013.dat")
-    expected = np.loadtxt("testoracle/freqs2013.dat")
-    np.testing.assert_equal(expected, actual, \
-        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    actual = np.loadtxt("freqs_events2013.dat")
+    expected = np.loadtxt("testoracle/freqs_events2013.dat")
+    np.testing.assert_equal(expected, 
+                            actual,
+                            "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 [numpy.loadtxt](http://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html) loads a file assumed to contain numerical data. It skips the lines beginning with #, as it treats these as comments. [numpy.testing.assert_equal](http://docs.scipy.org/doc/numpy/reference/generated/numpy.testing.assert_equal.html) checks that the given data is equal in its dimensions (e.g. number of rows and columns) and its values.
 
@@ -225,12 +232,12 @@ We may wish to distinguish between the form and content of our files. For exampl
 
 Then we can load the files and copy their contents into strings:
 
-    >>> machine=open("json/machine_readable.jsn").read()
-    >>> human=open("json/human_readable.jsn").read()
+    >>> machine = open("json/machine_readable.jsn").read()
+    >>> human = open("json/human_readable.jsn").read()
     
 If we compare the strings, we see they are not equal:
 
-    >>> human == machine
+    >>> machine == human
     False
 
 The [json.loads](https://docs.python.org/2/library/json.html#json.loads) function can parse these strings into a Python data structure called a [dictionary](https://docs.python.org/2/tutorial/datastructures.html#dictionaries):
@@ -255,9 +262,9 @@ Even if we do our checks in-code using numpy, as above, it is important to remem
 
     >>> a = 0.1
     >>> b = 0.2
-    >>> print a + b
+    >>> print(a + b)
     0.3
-    >>> print a + b == 0.3
+    >>> print(a + b == 0.3)
     False
     >>> a + b
     0.30000000000000004
@@ -270,11 +277,11 @@ To see how this affects testing, suppose we rewrote count_frequency so it could 
 * Calculate, in parallel, the frequencies of tokens within each chunk.
 * Combine the results from each chunk to get the final frequencies.
 
-As a result of our parallelisation, or any other optimisations, we might get subtle differences in our output files that would then cause problems when matching these to our test oracle. For example, suppose the file [outputs/freqs2013.dat](./outputs/freqs2013.dat) was the output from our parallelised software, when run with samples/events2013.dat as its input file. If we compare this to our test oracle we see a problem:
+As a result of our parallelisation, or any other optimisations, we might get subtle differences in our output files that would then cause problems when matching these to our test oracle. For example, suppose the file [outputs/freqs_events2013.dat](./outputs/freqs_events2013.dat) was the output from our parallelised software, when run with samples/events2013.dat as its input file. If we compare this to our test oracle we see a problem:
 
     >>> import numpy as np
-    >>> expected = np.loadtxt("testoracle/freqs2013.dat")
-    >>> actual = np.loadtxt("outputs/freqs2013.dat")
+    >>> expected = np.loadtxt("testoracle/freqs_events2013.dat")
+    >>> actual = np.loadtxt("outputs/freqs_events2013.dat")
     >>> np.testing.assert_equal(expected, actual)
     ...
     AssertionError:
@@ -287,12 +294,12 @@ When checking floating point values, we want to compare for equality *within a g
 Many languages have libraries, often as part of test frameworks, that provide functions for such floating point comparisons to be done. For example, nose provides the nose.tools.assert_almost_equal function (which, behind the scenes just calls [unittest.TestCase.assertAlmostEqual](https://docs.python.org/2/library/unittest.html#unittest.TestCase.assertAlmostEqual)). This function takes the values to be compared and a number of decimal places:
 
     >>> from nose.tools import assert_almost_equal
-    >>> e = 2.000001
-    >>> a = 2.0000000001
-    >>> assert_almost_equal(e, a, 0)
-    >>> assert_almost_equal(e, a, 2)
-    >>> assert_almost_equal(e, a, 4)
-    >>> assert_almost_equal(e, a, 6)
+    >>> expected = 2.000001
+    >>> actual = 2.0000000001
+    >>> assert_almost_equal(expected, actual, 0)
+    >>> assert_almost_equal(expected, actual, 2)
+    >>> assert_almost_equal(expected, actual, 4)
+    >>> assert_almost_equal(expected, actual, 6)
     ...
     AssertionError: 2.000001 != 2.0000000001 within 6 places
 
@@ -316,13 +323,16 @@ For more on the issues of testing and floating point numbers, see [Software Carp
 
 So, with this in mind, we should change our comparison in test_counts.py from:
 
-    np.testing.assert_equal(expected, actual, \
-        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    np.testing.assert_equal(expected, 
+                            actual,
+                            "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 to:
 
-    np.testing.assert_almost_equal(expected, actual, 2, 
-        "freqs2013.dat not equal to testoracle/freqs2013.dat")
+    np.testing.assert_almost_equal(expected,
+                                   actual,
+                                   2, 
+                                   "freqs_events2013.dat =/= testoracle/freqs_events2013.dat")
 
 This helps to ensure that our tests will not suddenly fail if any refactorings result in subtle changes in floating point values within output files.
 
@@ -332,17 +342,22 @@ What is a suitable threshold for equality? That depends upon the domain, and the
 
 We now have a system, or end-to-end, test. Ideally, we'd want to add some (a lot!) more tests. For example, to test count_frequency with a minimum token length:
 
-    result = subprocess.call("count_frequency samples/events2013.dat freqs2013.dat 5", shell=True)
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat 5"
+    result = subprocess.call("count_frequency samples/events2013.dat freqs_events2013.dat 5", shell=True)
     assert_equal(0, result, "Unexpected return code")
-    assert_true(os.path.isfile("freqs2013_5.dat"), "Could not find freqs2013_5.dat")
-    np.testing.assert_almost_equal(expected, actual, 2, 
-        "freqs2013_5.dat not equal to testoracle/freqs2013_5.dat")
+    assert_true(os.path.isfile("freqs5_events2013.dat"),
+                "Could not find freqs5_events2013.dat")
+    np.testing.assert_almost_equal(expected,
+                                   actual,
+                                   2,
+                                   "freqs5_events2013.dat =/= testoracle/freqs5_events2013.dat")
 
 Another type of system test we can do is to check what happens when our software is not given valid inputs. For example, if we do not provide an output file name to count_frequency then a non-zero return code is expected:
 
     from nose.tools import assert_not_equal
 
-    result = subprocess.call("count_frequency samples/events2013.dat", shell=True)
+    cmd = "count_frequency samples/events2013.dat"
+    result = subprocess.call(cmd, shell=True)
     assert_not_equal(0, result, "Unexpected return code")
 
 ## Clean up the test code
@@ -351,9 +366,9 @@ Up to now our test code is just a sequence of commands. We can exploit language-
 
     def test_count_frequency():
 
-    def test_count_frequency_minimum_token_length():
+    def test_minimum_token_length():
 
-    def test_count_frequency_missing_output_file_name():
+    def test_missing_output_file_name():
 
 Test frameworks have conventions which, if test code conforms to these conventions, allows the test code to access the full power of the test framework. For example, nose comes with a command-line tool, nosetests, which looks for functions prefixed by "test_", runs these test functions and reports on the results.
 
@@ -395,7 +410,7 @@ As an example of how the same approach can be used with other languages, two oth
 
 [test_count_frequency.sh](./test_count_frequency.sh) provides an example of automated tests written as a bash shell script. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle (though only a naive comparison using the diff command is used). If you have Linux/Unix then you can run this as follows:
 
-    ./test_count_frequency.sh
+    test_count_frequency.sh
 
 [test_count_frequency.R](./test_count_frequency.R) provides an example of automated tests written in R. It provides examples of running software, checking the return code, checking for output files, and comparing output files to those of the test oracle. It uses R's [testthat](http://cran.r-project.org/web/packages/testthat/index.html) test framework. If you have R and have installed the testthat library, then you can run this on Windows as follows:
  
