@@ -12,9 +12,6 @@
 # implied. See the License for the specific language governing
 # permissions and limitations under the License.
 
-import random
-import sys
-
 """
 Create a file of random numbers.
 
@@ -22,16 +19,32 @@ Usage: python randoms.py FILE MAX_RANDOM MAX_VALUES [SEED]
 
 Creates a file, FILE, consisting of MAX_VALUES integers, one per line
 each value being randomly chosen between 0 and MAX_RANDOM. If SEED
-is given then the random seed is set to this. 
+is given then the random seed is set to this.
 """
 
-file = sys.argv[1]
-max_random = int(sys.argv[2])
-max_values = int(sys.argv[3])
-if len(sys.argv) == 5:
-    random.seed(int(sys.argv[4]))
+import random
+import sys
 
-f = open(file, 'w')
-for i in range(0, max_values):
-    f.write("%s\n" % str(random.randint(0, max_random)))
-f.close()
+
+def main(arguments):
+    """
+    Create a file of random numbers. The file consists of a number of
+    random values, ranging from 0 to a maximum random value. If a seed
+    is provided then this is used to seed the random numbers.
+
+    Arguments:
+        arguments (list[str or unicode]): file name, maximum random
+            value, number of random values and (optional) seed.
+    """
+    file_name = arguments[1]
+    max_random = int(arguments[2])
+    max_values = int(arguments[3])
+    if len(arguments) == 5:
+        random.seed(int(arguments[4]))
+    random_file = open(file_name, 'w')
+    for _ in range(0, max_values):
+        random_file.write("%s\n" % str(random.randint(0, max_random)))
+    random_file.close()
+
+if __name__ == '__main__':
+    main(sys.argv)

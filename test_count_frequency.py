@@ -1,12 +1,12 @@
 # Copyright 2014-2015, The University of Edinburgh.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License. 
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #    http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
 # implied. See the License for the specific language governing
@@ -20,10 +20,10 @@ These tests expect:
 - Input files to be in a samples/ directory:
   - events2013.dat
 - Test oracle files to be in a testoracle/ directory:
-  - freqs_events2013.dat created via 
+  - freqs_events2013.dat created via
     count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
-  - freqs5_events2013.dat created via 
-    count_frequency samples/events2013.dat testoracle/freqs_events2013.dat 5
+  - freqs5_events2013.dat created via
+    count_frequency samples/events2013.dat testoracle/freqs5_events2013.dat 5
 """
 
 import numpy as np
@@ -34,60 +34,76 @@ from nose.tools import assert_equal
 from nose.tools import assert_not_equal
 from nose.tools import assert_true
 
-"""
-Compare two files, line by line, for equality.
-"""
-def compare_files(file1, file2):
-  with open(file1) as f1, open(file2) as f2:
-    for line1, line2 in zip(f1, f2):
-      if line1 != line2:
-        f1.close()
-        f2.close()
-        return False
-  f1.close()
-  f2.close()
-  return True
 
-"""
-Delete all files ending in a suffix from a specific directory.
-"""
-def delete_files(dir, suffix):
-  for file in os.listdir(dir):
-    if file.endswith(suffix):
-      path = os.path.join(dir, file)
-      try:
-        if os.path.isfile(path):
-          os.remove(path)
-      except Exception, e:
-        print e
+def compare_files(file_name1, file_name2):
+    """
+    Compare two files, line by line, for equality.
+    Arguments:
+        file_name1 (str or unicode): file name.
+        file_name2 (str or unicode): file name.
+    Returns:
+        bool: True if files are equal, False otherwise.
+    """
+    with open(file_name1) as file1, open(file_name2) as file2:
+        for line1, line2 in zip(file1, file2):
+            if line1 != line2:
+                file1.close()
+                file2.close()
+                return False
+    file1.close()
+    file2.close()
+    return True
 
-"""
-Test count_frequency.
-"""
+
+def delete_files(directory, suffix):
+    """
+    Delete all files ending in a suffix from a specific directory.
+    """
+    for file_name in os.listdir(directory):
+        if file_name.endswith(suffix):
+            path = os.path.join(directory, file_name)
+            try:
+                if os.path.isfile(path):
+                    os.remove(path)
+            except OSError as error:
+                # Don't care, but warn user.
+                print(error)
+
+
 def test_count_frequency():
-  result = subprocess.call("count_frequency samples/events2013.dat freqs_events2013.dat", shell=True)
-  assert_equal(0, result, "Unexpected return code")
-  assert_true(os.path.isfile("freqs_events2013.dat"), "Could not find freqs_events2013.dat")
-  actual = np.loadtxt("freqs_events2013.dat")
-  expected = np.loadtxt("testoracle/freqs_events2013.dat")
-  np.testing.assert_almost_equal(expected, actual, 2, \
-                                 "freqs_events2013.dat not equal to testoracle/freqs_events2013.dat")
+    """
+    Test count_frequency.
+    """
+    cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+    result = subprocess.call(cmd, shell=True)
+    assert_equal(0, result, "Unexpected return code")
+    assert_true(os.path.isfile("freqs_events2013.dat"),
+                "Could not find freqs_events2013.dat")
+    actual = np.loadtxt("freqs_events2013.dat")
+    expected = np.loadtxt("testoracle/freqs_events2013.dat")
+    np.testing.assert_almost_equal(expected, actual, 2,
+                                   "freqs_events2013.dat =/= testoracle")
 
-"""
-Test count_frequency with a minimum token length.
-"""
-def test_count_frequency_minimum_token_length():
-  result = subprocess.call("count_frequency samples/events2013.dat freqs5_events2013.dat 5", shell=True)
-  assert_equal(0, result, "Unexpected return code")
-  assert_true(os.path.isfile("freqs5_events2013.dat"), "Could not find freqs5_events2013.dat")
-  actual = np.loadtxt("freqs5_events2013.dat")
-  expected = np.loadtxt("testoracle/freqs5_events2013.dat")
-  np.testing.assert_almost_equal(expected, actual, 2, \
-                                 "freqs5_events2013.dat not equal to testoracle/freqs5_events2013.dat")
 
-"""
-Test count_frequency with a missing output file name.
-"""
-def test_count_frequency_missing_output_file_name():
-  result = subprocess.call("count_frequency samples/events2013.dat", shell=True)
-  assert_not_equal(0, result, "Unexpected return code")
+def test_minimum_token_length():
+    """
+    Test count_frequency with a minimum token length.
+    """
+    cmd = "count_frequency samples/events2013.dat freqs5_events2013.dat 5"
+    result = subprocess.call(cmd, shell=True)
+    assert_equal(0, result, "Unexpected return code")
+    assert_true(os.path.isfile("freqs5_events2013.dat"),
+                "Could not find freqs5_events2013.dat")
+    actual = np.loadtxt("freqs5_events2013.dat")
+    expected = np.loadtxt("testoracle/freqs5_events2013.dat")
+    np.testing.assert_almost_equal(expected, actual, 2,
+                                   "freqs5_events2013.dat =/= testoracle")
+
+
+def test_missing_output_file_name():
+    """
+    Test count_frequency with a missing output file name.
+    """
+    cmd = "count_frequency samples/events2013.dat"
+    result = subprocess.call(cmd, shell=True)
+    assert_not_equal(0, result, "Unexpected return code")
