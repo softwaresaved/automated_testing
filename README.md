@@ -799,7 +799,7 @@ CTRL-D
 You can then run the tests as follows:
 
 ```
-Rscript testthat.R
+$ Rscript testthat.R
 ```
 
 ### FABBER
