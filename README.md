@@ -794,6 +794,7 @@ Run:
 > install.packages("testthat")
 > library(testthat)
 CTRL-D
+```
 
 You can then run the tests as follows:
 
