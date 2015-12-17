@@ -210,7 +210,7 @@ $ count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
 $ count_frequency samples/events2013.dat testoracle/freqs5_events2013.dat 5
 ```
 
-If we have many files we could use some form of automation, for example, a bash script
+If we have many files we could use some form of automation, for example, a bash script, [create_test_oracle.sh](./create_test_oracle.sh):
 
 ```
 for F in $(ls samples)
@@ -220,7 +220,7 @@ do
 done
 ```
 
-or a DOS script. 
+Or a DOS script, [create_test_oracle.bat](./create_test_oracle.bat):
 
 ```
 for /r %%F in (samples\*) do (
@@ -728,7 +728,7 @@ I will now give an example of our framework, but implemented in R, and describe 
 
 ### A regression test in R
 
-As an example of how the recipe can be used with other languages, here is one of our regression tests in R.
+As an example of how the recipe can be used with other languages, here is one of our regression tests in R, [test_count_frequency.R](./test_count_frequency.R):
 
 ```
 library(testthat)
@@ -759,8 +759,6 @@ test_that("Test count_frequency", {
                info="freqs_events2013.dat not equal to testoracle")
 })
 ```
-
-See [test_count_frequency.R](./test_count_frequency.R).
 
 It uses functions from R's [testthat](http://cran.r-project.org/web/packages/testthat/index.html) unit test framework.
 
