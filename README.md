@@ -776,13 +776,26 @@ testthat's `expect_equivalent` function is used to compare the dimensions (numbe
 
 Finally, testthat's `expect_equal` function is used to compare the expected and actual data to within a given tolerance.
 
-If you have R and have installed the testthat library, then you can run this on Windows as follows:
- 
+If you have R you can install testthat on Windows via: 
+
 ```    
-C:\Program Files\R\R-3.1.0\bin\Rscript.exe testthat.R
+> Rterm
 ```
 
-You can run this on Linux/Unix as follows:
+and Linux/Unix via:
+
+```
+$ R
+```
+
+Run:
+
+```
+> install.packages("testthat")
+> library(testthat)
+CTRL-D
+
+You can then run the tests as follows:
 
 ```
 Rscript testthat.R
