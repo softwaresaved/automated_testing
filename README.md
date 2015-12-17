@@ -811,7 +811,7 @@ The Software Sustainability Institute [worked with TPLS](http://software.ac.uk/b
 A regression test framework was written in Python, using numpy, to compare TPLS output files to those of the test oracle. As the output files contained logging-related meta-data these parts of the files were compared only in terms of the number of lines. The numerical data was compared using a numpy function, `numpy.allclose`, that, like `assert_almost_equal` compares multi-dimensional data for equality to within a given tolerance, which was valuable given that TPLS produces subtly different results depending on the number of processes it runs with or whether it is running on a Linux cluster or ARCHER.
 
 
-## Conclusion
+## Conclusions
 
 To conclude, I'll describe ways in which the regression test recipe can be customised, discuss some of its limitations and sum up the key points of this guide.
 
@@ -841,7 +841,7 @@ And, they do not test scientific correctness. To test this is the remit of unit 
 
 Regression tests also can serve as a starting point for introducing unit tests. When working with FABBER, the consultant added C++ code to log the input values and return values from their functions. They then ran the FABBER code via the BASIL tutorials and wrote CppUnit unit tests to call these values with the input values that had been logged and to check that the output values were equal to the return values that had been logged. Removing the logging code restored FABBER to its original state, and they were left with an initial set of unit tests for some of FABBER's functions.
 
-### Conclusion
+### Key points
 
 Automated tests can be written just once, but run many times, freeing us to do innovative activities, such as research!
 
