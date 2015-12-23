@@ -2,9 +2,11 @@
 
 "Refactor, optimise and parallelise your code with confidence"
 
-One of the risks of refactoring, optimising or parallelising our code is that we introduce a bug as we do so. We may not find these bugs until hours, days, or even weeks, later.
+One of the risks of refactoring, optimising or parallelising our code is that we might introduce a bug as we do so.
 
-In this guide, I describe a recipe for how we can use regression testing to quickly discover any bugs we might introduce when modifying our code.
+We may not find these bugs until hours, days, or even weeks, later.
+
+In this guide, I describe a recipe for introducing regression testing to enable us to quickly discover any bugs we might introduce when modifying our code.
 
 ## Overview
 
@@ -14,9 +16,9 @@ I then describe regression tests and a recipe for introducing regression tests f
 
 I walk through the recipe in detail, by means of a running example in Python, though the recipe can be applied within any language.
 
-I also give examples of regression testing in practice from projects run at [EPCC](http://www.epcc.ed.ac.uk), The University of Edinburgh and [The Software Sustainability Institute](http://www.software.ac.uk]. 
+I also give examples of regression testing in practice from projects run at [EPCC](http://www.epcc.ed.ac.uk), The University of Edinburgh and [The Software Sustainability Institute](http://www.software.ac.uk). 
 
-For the purposes of this guide, the term "code" can mean anything, whether this be C, C++, Fortran, or Java programs or Python, R, or bash scripts.
+For the purpose of this guide, the term "code" can mean anything, whether this be C, C++, Fortran, or Java programs or Python, R, or bash scripts.
 
 ## Follow along...
 
@@ -38,13 +40,13 @@ $ export PATH=.:$PATH
 
 ## Why test our code?
 
-Why do we need to test our code? Consider the case of Geoffrey Chang, a researcher at the The Scripps Research Institute in the US. In 2006, he and his colleagues retracted a number of papers from the journal Science. A bug in one of their codes meant that the data produced by this code was incorrect. As a result, the conclusions which they had drawn from this flawed data, were also incorrect. 
+Why do we need to test our code? Consider the case of Geoffrey Chang, a researcher at the The Scripps Research Institute in the United States. In 2006, he and his colleagues retracted a number of papers from the journal Science. A bug in one of their codes meant that the data produced by this code was incorrect. As a result, the conclusions which they had drawn from this flawed data, were also incorrect.
 
 > We wish to retract our research article ... and both of our Reports ... an in-house data reduction program introduced a change in sign ... converted the anomalous pairs (I+ and I-) to (F- and F+)...
 
 Chang, G., Roth, C.B., Reyes, C.L., Pornillos, O., Yen-Ju, C., Chen, A.P. (2006) Retraction. Science 22 December 2006: Vol. 314 no. 5807 p. 1875  DOI: [10.1126/science.314.587.1875b](http://www.sciencemag.org/content/314/5807/1875.2.long)
 
-A group of Swiss researchers had first raised concerns about the data. The problem arose from something as simple as a bug causing two columns of data to be flipped.
+It was a group of Swiss researchers that first raised concerns about the data. The data was flawed due to a bug in a data analysis program causing two columns to be flipped.
 
 > Swiss researchers published a paper in Nature that cast serious doubt on a protein structure Chang's group had described in a 2001 Science paper.
 
@@ -52,81 +54,71 @@ A group of Swiss researchers had first raised concerns about the data. The probl
 
 Miller G. (2006) Scientific publishing. A scientist's nightmare: software problem leads to five retractions. Science 22 December 2006: Vol. 314 no. 5807 pp. 1856-1857 DOI: [10.1126/science.314.5807.1856](http://www.sciencemag.org/content/314/5807/1856.long)
 
-There are a number of reasons why we should test our code. Tests help us to help check that our code produces scientifically-correct results.
+Tests help us to help check that our code produces scientifically-correct results. 
 
-They help us to ensure that our code continues to behave connectly when it is:
+Tests also help us to ensure that our code continues to do so when it is tidied, extended to support new functionality, bug-fixed, updated to use new libraries, optimised, and, parallelised.
 
-* Tidied,
-* Extended to support new functionality,
-* Bug-fixed,
-* Updated to use new libraries,
-* Optimised, and,
-* Parallelised
-
-After all, optimisation or parallelisation is futile if...
-
-* Our code no longer works correctly,
-* And we burn up our HPC resource budget running our incorrect code,
-* And we don't notice until weeks, or months, later,
-* Or, another researcher notices before we do!
+After all, optimisation or parallelisation is futile if our code no longer works correctly, and we burn up our HPC resource budget running our incorrect code, and we don't notice until weeks, or months, later, or, another researcher notices before we do!
 
 ## Why automated tests?
 
-Why should we automate our tests?
+Automated tests can be written once and then run many times, for example every day, or, every time we change our code.
 
-Automated tests can be written once and then run many times ("Write once, run many"), for example every day, or, even, every time we change our code. And, what is a repetitive manual process can become a simple automated process. After all, computers are designed for repetitive tasks. Automation frees us up to do innovative tasks, such as research!
+What is a repetitive, manual process becomes an automated process, the sort at which computers excel.
 
-Refactoring, optimising and parallelising code without automated tests can be done, but it is like climbing without a rope, only for the brave and skilled or foolhardy!
+Automation frees us to spend our time on innovative tasks, such as our research!
+
+Refactoring, optimising and parallelising code without automated tests can be done, but it is like climbing without a rope, only for the brave and skilled!
 
 ## What type of automated tests?
 
-The term automated testing sometimes makes people think of [unit tests](https://en.wikipedia.org/wiki/Unit_testing), tests for the smallest units of our code, for example, functions, methods, sub-routines or classes. 
+The term automated testing sometimes makes people think of [unit tests](https://en.wikipedia.org/wiki/Unit_testing), testing the smallest units of our code, for example, functions, methods, sub-routines or classes. 
 
-A challenge that we can face, especially if we have large, legacy codes, is, where to start? The prospect of having to write dozens of unit tests can be off-putting at the best of times, let alone if we have data to analyse, a paper to write or a conference to prepare for.
+But, a challenge that we can face, especially if we have large, legacy codes, is, where to start?
 
-Instead of starting with unit testing, we can start with [regression testing](https://en.wikipedia.org/wiki/Regression_testing). Regression testing allows bugs to be identified after changes have been made to our code. They allow us to check that our code continues to be correct when it is tidied, extended, bug-fixed, updated to use new libraries, optimised, or parallelised.
+The prospect of having to write dozens of unit tests can be off-putting at the best of times, let alone if we have data to analyse, a paper to write or a conference to prepare for.
 
-Unit testing can then be introduced at a later date, when the demands of research permit.
+Instead of starting with unit testing, we can start with [regression testing](https://en.wikipedia.org/wiki/Regression_testing). Regression testing allows us to check that our code continues to be correct after we have made changes to it. Unit testing can then be introduced at a later date, when the demands of research permit.
+
+Regression testing does not test whether our code produces scientifically-correct results, only that we don't change its behaviour in unexpected ways. We will return to this distinction later.
 
 ## A recipe for introducing regression tests
 
-To introduce regression tests we can follow a simple recipe:
+To introduce regression testing we can follow a recipe.
 
 * First, we create a [**test oracle**](https://en.wikipedia.org/wiki/Oracle_\(software_testing\)). We run out code on sets of input files and parameters. We save the corresponding output files. These output files serve as the **expected outputs** from our program given the corresponding input files and parameters.
-* We then write our **regression tests**. Each regression test runs our code for a set of input files and parameters. It then compares the output from our code to the expected outputs within the test oracle, it compares the **actual outputs** to the expected outputs.
-* We **run** our regression tests after every change to the code, to check we have not introduced any bugs that have changed its behaviour.
+* We then write **regression tests**. Each regression test runs our code for a set of input files and parameters. It then compares the output from our code to the expected outputs within the test oracle, it compares the **actual outputs** to the expected outputs.
+* We **run** our regression tests regularly, or after every change to the code, to check we have not introduced any bugs that have changed its behaviour.
 
-Note that we assume that the initial code produces scientifically-correct results. We will return to this assumption later. Here we are only testing that we have not changed the behaviour of our code.
+### EPCC oncology project 2009
 
-## EPCC oncology project 2009
+As an example of regression testing in practice, let's look at [EPCC oncology project](http://www.hector.ac.uk/casestudies/oncology.php) from 2009.
 
-As an example of regression testing in practice, consider the [EPCC oncology project](http://www.hector.ac.uk/casestudies/oncology.php) from 2009.
+The Colon Cancer Genetics Group at the Western General Hospital, Edinburgh had a Fortran code to identify the relationship between pairs of genetic markers and colorectal cancer. Researchers wanted to run their code on a data set of over 560,000 genetic markers with data from almost 2000 people. They estimated that it would take their code 400 days to process this data, so they asked EPCC to help optimise and parallelise their code so it could be run on the HECToR super-computer.
 
-The Colon Cancer Genetics Group at the Western General Hospital, Edinburgh had a Fortran code to identify the relationship between pairs of genetic markers and colorectal cancer. Researchers wanted to run their code on a data set of 560,000 genetic markers with real data from 1000 cancer cases and 1000 matched controls. However, this was estimated to involve 150 billion comparisons with a run time of 400 days!
+To ensure that their changes did not introduce any bugs, EPCC used regression testing. The code was run on a subset of the data to create a test oracle.  A set of regression tests were written. The code was then optimised and parallelised in stages, with the regression tests being run nightly to ensure that the behaviour of the code had not changed. After optimisation and parallelisation, the code was run with the full data set on 512 processors on HECToR. The run time was 5 hours.
 
-EPCC worked to optimise and parallelise the code. First the code was run on a subset of the data to create a test oracle and a regression test framework. The code was then optimised and parallelised in stages, with the tests being run nightly to ensure that the behaviour of the code had not changed. After the optimisation and parallelisation, the code was able to run on 512 processors on HECToR and analyse the full data set in 5 hours.
+I will now describe how to implement the recipe for regression testing by means of a running example in Python, though the recipe can be applied within any language.
 
 ## Implementing the regression test recipe
 
-I will now describe how to implement the recipe using an example.
+I will now describe how to implement the recipe for regression testing by means of a running example in Python, though the recipe can be applied within any language.
 
 ### Some assumptions about our code
 
-In demonstrating how to apply the recipe for introducing regression testing, we'll make a few assumptions about our code.
+In demonstrating how to apply the recipe, we will make a few assumptions about our code.
 
-First, we'll assume that a user can invoke the software from the Linux/Unix shell or Windows DOS prompt. 
+* We will assume that a user can run our code from the Linux or Unix shell or the DOS command prompt.
+* We will assume it runs in batch mode, that is, once started it runs to completion without further user interaction. The code is configured via command-line parameters and/or configuration files and reads in zero or more input files.
+* We will also assume that our code writes one or more output files and, optionally, exits with an [exit status](http://en.wikipedia.org/wiki/Exit_status) which indicates whether the code succeeded or failed in its operation. I say 'optionally' as some codes always return zero. 
 
-We'll assume it runs in batch mode, that is, once started it runs to completion without further user interaction. So, the code is configured via command-line parameters and/or configuration files and reads in zero or more input files.
-
-We also assume it writes one or more output files and, optionally, exits with an [exit status](http://en.wikipedia.org/wiki/Exit_status) which indicates whether the code succeeded or failed in its operation. We say optionally, as some codes always return 0. 
-
-There are many codes which have these qualities including C, C++, Fortran, and Java executables, or Python, R, or bash scripts.
+There are many codes which have these qualities including C, C++, Fortran, and Java executables, and Python, R, and bash scripts.
 
 ### A token frequency program
 
-An example of a code that conforms to these assumptions is this code that counts the frequency of strings of words or numbers within a text file.
+As an example of a code that conforms to these assumptions, we will use a code that counts the frequency of numerical tokens - strings that represent integers or floating-point values - within a text file full of such tokens.
 
-The code is called `count_frequency` and can be run under Linux/Unix or Windows.
+The code is called `count_frequency` and can be run under Linux, Unix or DOS.
 
 It takes in two mandatory command-line arguments, an input file name and an output file name.
 
@@ -134,11 +126,9 @@ It takes in two mandatory command-line arguments, an input file name and an outp
 $ count_frequency INPUT_FILE OUTPUT_FILE [MINIMUM_TOKEN_LENGTH]
 ```
 
-It reads in the input file, counts the frequency of each unique string and outputs a file with the counts.
+It reads in the input file, counts the frequency of each unique numerical token, and outputs a file with the frequency counts.
 
-The output file has one row for each unique string.
-
-Each row consists of the string, the number of occurrences of that string in the input file, and this number expressed as a percentage of the total number of strings in the input file.
+The output file has one row for each unique token.
 
 ```
 # Frequency data
@@ -147,7 +137,7 @@ TOKEN FREQUENCY PERCENTAGE
 . . .
 ```
 
-For example:
+Each row consists of the token, the number of occurrences of that token in the input file, and this number expressed as a percentage of the total number of unique tokens in the input file.
 
 ```
 $ cat samples/events2013.dat:
@@ -167,7 +157,7 @@ $ cat freqs_events2013.dat
 . . .
 ```
 
-The code also also takes an optional command-line argument, the minimum length of a string. If this argument is provided, then only strings of that length or longer are considered.
+The code also takes an optional command-line argument, the minimum length of a token. If this argument is provided, then only tokens of that length or longer are processed.
 
 ```
 $ count_frequency samples/events2013.dat freqs5_events2013.dat 5
@@ -180,32 +170,35 @@ $ cat freqs5_events2013.dat
 
 ### Choose a language for regression tests
 
-We need to choose a language in which to write our regression tests. 
+We need to choose a language in which to write our regression tests. As we assume our code can be run from the command-line, in batch mode, and, as we are writing regression tests, we are not restricted to using the implementation language of our code.
 
-As we assume our code can be run from the command-line, in batch mode, and, as we are writing regression tests, we are not restricted to using the implementation language of our code. 
+Which language do we choose?
 
-Many languages support functions or commands that allow commands to be passed to the operating system. This includes commands to run our code. These also return the exit status from the commands run. 
+Many languages provide functions that allow commands to be passed to the operating system, such as that to run our code. These functions also return the exit status from the commands run. Many languages also provide functions to check that directories and files exist, read in files line-by-line, parse lines and to compare values of various types, for example, integers, floats, doubles, strings, or booleans.
 
-Many languages also provide functions to check that directories and files exist, read in files line-by-line, parse lines and to compare values of various types, for example, integers, floats, strings, booleans.
+Many of these languages have associated [unit testing frameworks](http://en.wikipedia.org/wiki/xUnit). For example, C has CUnit, C++ has CppUnit and googletest, Fortran has FRUIT, Java has JUnit, Python has nose and py.test, and R has testthat (see, for example, The Software Sustainability Institute's [Build and test examples](http://github.com/softwaresaved/build_and_test_examples)).
 
-Many of these languages have associated [unit testing frameworks](http://en.wikipedia.org/wiki/xUnit). For example, CUnit for C, CppUnit and googletest for C++, FRUIT for Fortran, JUnit for Java, nose and py.test for Python and testthat for R (see The Software Sustainability Institute's [Build and test examples](http://github.com/softwaresaved/build_and_test_examples)).
+Unit test frameworks provide numerous functions to help write tests. These include functions to compare values of various types, and to check whether certain conditions hold that mean that a test has passed or failed. They also record which tests pass and fail, and create reports summarising test passes and failures. Despite their name, unit test frameworks are not just for unit tests!
 
-Unit test frameworks provide myriad features to help write tests and, despite their name, are not restricted to unit tests. These features include commands and functions to compare values of various types, checking whether certain conditions hold that are required for a test to pass, recording when tests pass or fail, and creating reports summarising test passes and failures.
+If we are new to a research project, we may not be familiar with the language used to implement the research code, so, we might choose a language that is easier for us to use, or with which we have the most experience.
 
-So, given the number of languages available, which one do we choose?
+We could choose a language which has a more powerful, or usable, test framework than those available within the code's implementation language.
 
-* If we are new to a research project, we may not be familiar with the language used to implement the code, so, we might choose a language that is easier for us to use or with which we have the most experience.
-* We could choose a language which has more powerful or usable test framework than those available within the code's implementation language.
-* Or, we might want to use the same language as our code that then makes introducing unit tests in future less challenging.
+Or, we might want to use the same language as our code, as this can make introducing unit tests in future less challenging.
 
-In our example, we'll use Python as it does not need to be compiled and is complemented by two useful tools, the [nose](https://nose.readthedocs.org/) unit test framework, and the [numpy](http://www.numpy.org/) scientific computing package, which provides useful functions for comparing data files.
+For our example, we'll use Python, as it does not need to be compiled, and is complemented by two useful tools, the [nose](https://nose.readthedocs.org/) unit test framework, and the [numpy](http://www.numpy.org/) scientific computing package, which provides useful functions for comparing files with numerical data.
 
 ### Create a test oracle
 
-We first create a test oracle. We can create a directory, `testoracle`. We then run `count_frequency` on valid inputs and populate `testoracle` with the corresponding outputs.
+Following the recipe, we first create a test oracle. We can create a directory, `testoracle`.
 
 ```
 $ mkdir testoracle
+```
+
+We then run `count_frequency` on valid input files, and populate the `testoracle` directory with the corresponding output files.
+
+```
 $ count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
 $ count_frequency samples/events2013.dat testoracle/freqs5_events2013.dat 5
 ```
@@ -231,11 +224,11 @@ for /r %%F in (samples\*) do (
 
 We might even write a Makefile.
 
-Ideally, the more samples in our test oracle the better!
+The more examples in our test oracle the better!
 
 ### Run our code
 
-We now want to write our regression tests. Firstly, they need to run our code.
+We now want to write a regression test. Firstly, it needs to run our code.
 
 Python's [subprocess.call](https://docs.python.org/2/library/subprocess.html#subprocess.call) function allows commands to be passed to the operating system and run.
 
@@ -246,23 +239,27 @@ cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
 subprocess.call(cmd, shell=True)
 ```
 
-`shell=True` tells Python to run the command within the shell. So, if we put our commands in a Python file, `test_counts.py`, we can then run this script using Python and, so, run `count_frequency`.
+Setting `shell` to `True` tells Python to pass the command straight to the operating system.
+
+We can write a simple Python script, `test_counts.py`, to run `count_frequency` using the `call` function. We can then run our script using Python.
 
 ```
 $ python test_counts.py
 ```
 
-Most languages support functions like this. For example:
+By running our script, we run our code.
 
-* C and C++ [system](http://linux.die.net/man/3/system) function.
-* Fortran [SYSTEM](https://gcc.gnu.org/onlinedocs/gfortran/SYSTEM.html) subroutine.
-* Java [java.lang.Runtime](http://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html) class.
-* Python [subprocess](https://docs.python.org/2/library/subprocess.html) package
-* R [system2](https://stat.ethz.ch/R-manual/R-devel/library/base/html/system2.html) function.
+Most languages support functions like `call`. For example:
+
+* C and C++ provide a [system](http://linux.die.net/man/3/system) function.
+* Fortran provides a [SYSTEM](https://gcc.gnu.org/onlinedocs/gfortran/SYSTEM.html) subroutine.
+* Java provides a [java.lang.Runtime](http://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html) class.
+* Python provides a [subprocess](https://docs.python.org/2/library/subprocess.html) package
+* R provides a [system2](https://stat.ethz.ch/R-manual/R-devel/library/base/html/system2.html) function.
 
 ### Create a test function
 
-As we will have more than one regression test, we can put our code within a function, for example, `test_count_frequency`.
+As we will have more than one regression test, we can put our test code within a function, for example, `test_count_frequency`.
 
 ```
 import subprocess
@@ -272,11 +269,11 @@ def test_count_frequency():
   subprocess.call(cmd, shell=True)
 ```
 
-Putting our code into functions not only is more modular, it allows us to run our tests using a unit test framework.
+Putting our test code into functions not only is more modular, it allows us to run our tests using a unit test framework.
 
-The Python unit test framework, nose, has a test runner, nosetests, which looks for functions with the prefix `test_` and runs these. It records which tests succeeded and which failed and reports on these.
+The Python unit test framework, nose, has a test runner, `nosetests`, which looks for functions with the prefix `test_` and runs these. It records which tests succeeded and which failed, and prints reports on these.
 
-So, if we run `test_counts.py` using nosetests we get a report that shows our test successfully passed.
+If we run `test_counts.py` using `nosetests`, we get a report that shows our test successfully passed, as `nosetests` prints a dot for each test function that it finds and runs, and which succeeds.
 
 ```
 $ nosetests test_counts.py
@@ -286,16 +283,14 @@ Ran 1 test in 10.576s
 OK
 ```
 
-nosetests prints a dot for each test function that it finds and runs.
-
-Many unit test frameworks provide these capabilities so long as tests are written in a certain way. For example, using FRUIT for Fortran you write test subroutines:
+Many unit test frameworks provide these capabilities, so long as tests are written in a certain way. For example, using FRUIT for Fortran we write test subroutines.
 
 ```
 ! FORTRAN FRUIT example
 subroutine test_count_frequency() . . .
 ```
 
-Using JUnit for Java, you write test classes and mark up test methods with annotations:
+Using JUnit for Java, we write test classes, and mark up test methods with annotations.
 
 ```
 // Java JUnit example
@@ -312,13 +307,11 @@ public class CountFrequencyTest
 
 ### Check exit status
 
-Python's `subprocess.call` command returns the exit status from the operating system.
+Python's `call` function returns the exit status from the command that was passed to the operating system.
 
-Linux/Unix and Windows both adopt the convention that a exit status of zero means that a command exited OK and non-zero means that some problem arose.
+Linux, Unix and Windows adopt the convention that a exit status of zero means that a command exited OK and non-zero means that some problem arose.
 
-So, we can check that the exit status is zero.
-
-We can use a function provided by nose, `nose.tools.assert_equal`, which compares two values for equality and if they are not equal records that the test has failed, along with an informative failure message. If a code always returns zero, that's OK, we don't need this check as we will introduce other checks.
+We can check that the exit status is zero. We can use a function provided by nose, `assert_equal`, which compares two values for equality, and, if they are not equal, records that the test has failed, along with an informative failure message.
 
 ```
 import subprocess
@@ -330,13 +323,15 @@ def test_count_frequency():
   assert_equal(0, result, "Unexpected exit status")
 ```
 
+If a code always returns zero, due to the way it has been implemented, that's OK, as we will also do other checks.
+
 ### Check output files were created
 
-The next check we can do is that we have an output file with the frequency counts from our code.
+The next check we can do is that we have an output file with the frequency counts. 
 
-Python's [os.path.isfile](https://docs.python.org/2/library/os.path.html#os.path.isfile) function allows us to check if a file exists. So, we can check that the expected output file now exists, after running `count_frequency`.
+Python's [os.path.isfile](https://docs.python.org/2/library/os.path.html#os.path.isfile) function allows us to check if a file exists. We can check that the expected output file now exists, after running `count_frequency`.
 
-We can use a function provided by nose, `nose.tools.assert_true`, which checks if a condition holds and, if not, records that the test has failed, along with an informative failure message.
+We can use a function provided by nose, `assert_true`, which checks if a condition holds and, if not, records that the test has failed, along with an informative failure message.
 
 ```
 import os.path
@@ -352,17 +347,19 @@ def test_count_frequency():
               "Could not find freqs_events2013.dat")
 ```
 
-By checking that output files exists, we can handle situations where code we are testing returns an exit status of zero even if problems arise.
+By checking that the output file exists, we can handle situations where code we are testing returns an exit status of zero, even if problems arise.
 
-This is about the simplest test we can run on our code - if we give it a valid input file does it produce an output file. The test is simple as we have not checked the contents of the output file, not yet.
+We now have about the simplest test we can run on our code - if we give it a valid input file does it produce an output file.
+
+The test is quite basic as we have not checked the contents of the output file.
 
 ### Compare output files to test oracle via operating system
 
-Rather than just checking if an output file exists, we really want to check whether the output file is the one we expect i.e. does it match the expected output file we have in our test oracle.
+Rather than just checking if an output file exists, we really want to check whether the output file is the one we expect, that is, it matches the expected output file we have in our test oracle.
 
-We can use subprocess.call to invoke the Linux/Unix `diff` command to compare the actual output file to the expected output file. We can provide the `-q` command-line flag to `diff` to suppress its output. If `diff` returns an exit status of zero then the two files are equal, if not then the two files differ.
+Under Linux or Unix, we can use `call` to invoke the `diff` command to compare the actual output file to the expected output file. We can provide the `-q` command-line flag to `diff` to suppress its output.
 
-We can use `assert_equals` to check this is the case.
+If `diff` returns an exit status of zero then the two files are equal. If it returns an exit status of non-zero, then the two files differ. We can use `assert_equals` to check that we do indeed get an exit status of zero, and, if not, then fail our test.
 
 ```
 def test_count_frequency():
@@ -376,19 +373,17 @@ def test_count_frequency():
   assert_equal(0, result, "freqs_events2013.dat =/= testoracle")
 ```
 
-For Windows, we can use the DOS `fc`, file compare, command, with `> NUL` to suppress what it prints out.
+Under Windows, we can use the DOS `fc`, file compare, command, redirecting the output to `NUL` to suppress its output.
 
 ```
 fc freqs_events2013.dat testoracle/freqs_events2013.dat > NUL
 ```
 
-One problem with this approach is that it makes our regression tests operating system dependent.
+One problem with using `diff` or `fc` is that it makes our regression tests operating system dependent.
 
 ### Compare output files to test oracle in-code
 
-We can make our regression tests operating system independent by comparing the tests within our test code.
-
-We can add a function that compares two files line-by-line.
+We can make our regression tests operating system independent by comparing the actual output file to the test oracle's expected output file, within our test code. We add a function that compares two files line-by-line.
 
 ```
 def compare_files(file_name1, file_name2):
@@ -418,11 +413,11 @@ Even if we don't care about cross-platform portability, there are other good rea
 
 If our chosen language has a library for comparing files, then we should use that instead.
 
-We now have a simple regression test. 
-
 ### Add more tests
 
-Ideally, we'd want to add some, a lot, more tests, for example, to test `count_frequency` with a minimum string length.
+We now have a regression test.
+
+Ideally, we'd want to add some, a lot, more tests, for example, to test `count_frequency` with a minimum token length.
 
 ```
 def test_minimum_token_length():
@@ -436,7 +431,7 @@ def test_minimum_token_length():
               "freqs5_events2013.dat not equal to testoracle")
 ```
 
-Another type of test we can do is to check what happens when our code is not given valid inputs.  For example, if we do not provide an output file name to `count_frequency` then `count_frequency` returns a non-zero exit status. We can write a regression test for this too.
+Another type of test we can do is to check what happens when our code is not given valid inputs. For example, if we do not provide an output file name to `count_frequency`, then it returns a non-zero exit status. We can write a regression test for this too.
 
 ```
 from nose.tools import assert_not_equal
@@ -446,29 +441,25 @@ def test_missing_output_file_name():
   result = subprocess.call(cmd, shell=True)
 ```
 
-After all, if changing `count_frequency` we would not to introduce a bug that means it returns an exit status of zero if the output file name is not provided.
+After all, if changing `count_frequency`, we would not want to introduce a bug that means it returns an exit status of zero, if the output file name is not provided.
 
 ### EPCC and Farr Institute 2015
 
-We now have a simple set of regression tests that run a code then compare the output files, line-by-line, to output files held within a test oracle.
+We now have a set of regression tests that run a code then compare the output files, line-by-line, to output files held within a test oracle. This type of regression testing was used by EPCC, as part of work with the [Farr Institute](http://www.farrinstitute.org/), which is building a secure platform for medical research.
 
-This type of regression testing was used by EPCC as part of work with the [Farr Institute](http://www.farrinstitute.org/), with whom EPCC is [working closely](https://www.epcc.ed.ac.uk/projects-portfolio/farr-institute).
+A data linker was developed in Java to anonymise data before it is passed to researchers. The linker reads in mappings from data tokens to anonymised tokens, then reads data files and replaces occurrences of the data tokens with the corresponding anonymised tokens. A prototype had been developed, but needed improvements to its scalability and robustness.
 
-Farr aims to harness health data for patient and public benefit by setting the international standard for the safe and secure use of electronic patient records linked to other population-based datasets for research purposes. 
+A test oracle was created from a sample mapping file and data files.
 
-A data linker was developed in Java to anonymise data before this is passed to researchers. The linker reads in mappings from data tokens to anonymised tokens, then reads data files and replaces occurrences of these tokens with the anonymised tokens. A prototype had been developed but needed improvements to its scalability and robustness.
-
-A test oracle was created from data provided by researchers for user acceptance testing.
-
-The [Apache ANT](http://ant.apache.org/) build tool was used to develop a simple regression test framework. It runs the linker using ANT's support for invoking Java programs (ANT's `java` task). It then checks that the anonymised output files existed, using ANT's support for checking if a file is available (ANT's `available` task). It then compares the anonymised output files to those of the test oracle, using a simple Java program to compare files line-by-line using a simple Java program that mimics `diff`.
+The [Apache ANT](http://ant.apache.org/) build tool was used to develop a basic regression test framework. It ran the linker using ANT's support for invoking Java programs. It then checked that the anonymised output files existed, using an ANT function for this. It then compared the anonymised output files to those of the test oracle, calling a Java program to compare the files line-by-line.
 
 ## Comparing actual outputs to expected outputs
 
-We will now look at problems that can arise when comparing the actual outputs from our code against our expected outputs and how to solve these.
+We will now look at the problems that can arise when comparing the actual outputs from our code against our expected outputs, and how to solve these problems.
 
 ### What is equality?
 
-Comparing files line-by-line was OK for Farr as its input and output files were sets of string tokens. In other research domains, comparing files in this way does not work.
+Comparing files line-by-line was OK for Farr, as its input and output files were sets of string tokens. In other research domains, comparing files in this way will not work.
 
 For example, imagine we have a data file in [JSON](http://www.json.org/) format, which has a time-stamped log of events.
 
@@ -476,7 +467,7 @@ For example, imagine we have a data file in [JSON](http://www.json.org/) format,
 {"2015-01-06":{"Paused":"00:00:00"},"2015-01-07":{"Running":"00:00:00"},"2015-01-08":{"Paused":"15:48:00"},"2015-01-09":{"Paused":"15:48:00","Running":"03:34:00"}}
 ```
 
-Now take this data, still in JSON format, but format it to be human-readable.
+Now take this data, still in JSON format, but restructure it to be human-readable.
 
 ```
 {
@@ -498,7 +489,7 @@ Now take this data, still in JSON format, but format it to be human-readable.
 
 Both these files contain the same data, they are semantically equivalent. 
 
-However, if we run the Linux/Unix `diff` command they are considered to be different due to the extra white-space in the human-readable version. 
+However, if we run the `diff` command, they are considered to be different due to the extra white-space in the human-readable version.
 
 ```
 $ diff -q json/machine_readable.jsn json/human_readable.jsn
@@ -523,31 +514,34 @@ However, we can load them using Python's [json.loads](https://docs.python.org/2/
 >>> human_json = json.loads(human)
 ```
 
-If we then compare the dictionaries, we can see they that they are indeed equal.
+If we then compare these dictionaries, we can see they that they are, indeed, equal.
 
 ```
 >>> machine_json == human_json
 True
 ```
 
-If we refactor software to output data files in a more human-readable format by introducing white-space and newlines, then we want our automated tests to view these files as equivalent to their non-human readable counterparts, since their content is identical, only their presentation has changed. 
+If we refactor our code to output data files in a more human-readable format, by introducing white-space and newlines, then we want our regression tests to view these files as equivalent to their non-human readable counterparts, since their content is identical, only their presentation has changed. 
 
-In this example, `json.loads` takes care of that for us, parsing the files into a data structure for us. 
-
-In other situations, we may have to write our own code to parse files and compare them for equality in the way we wish.
+In this example, the Python `json.loads` function takes care of that for us. In other situations, we may have to write our own code to parse files and compare them for equality in the way we wish.
 
 For example, imagine if we had data files that include a time-stamp recording information about when the data was created.
 
 ```
-DateCreated: 2015-01-28 17:34 = DateCreated: 2015-11-11 09:21
+DateCreated: 2015-01-28 17:34
 ```
 
-A simple string-based comparison for equality would fail as our output files and test oracle files would have different time-stamps. 
+```
+DateCreated: 2015-11-11 09:21
+```
 
-So, in this scenario, we would want to have a smarter check for equality, one that:
+A string-based comparison for equality would fail, as our output files and test oracle files would have different time-stamps. 
+
+In this scenario, we would want to have a smarter check for equality, one that:
 
 * Checks that the line that is meant to hold the timestamp starts with the string `DateCreated`.
-* Check that its value is a valid time-stamp, without worrying about the exact date and time.
+* Then, checks that its value is a valid time-stamp, without worrying about the exact date and time.
+
 
 ```
 from datetime import datetime
@@ -571,17 +565,17 @@ Again, we need to decide, given the nature of our data, and our research, what i
 
 ### Compare numerical values not strings
 
-Returning to our example, `count_frequency` outputs data files which contain three columns of data. Two of these columns are integers and one is of floating points.
+Returning to our example, `count_frequency` outputs data files which contain three columns of data. Two of these columns are integers and one is of floating point values. We want to compare our actual output file data to our expected output file data as numbers, and not strings. This is because the string `0` does not equal the string `0.0`, but the floating point value 0 does equal the floating point value 0.0.
 
-We want to compare our actual output file data to our expected output file data as numbers not as strings, as, for example, the string `0` does not equal `0.0` but the value 0 does equal 0.0.
+Some languages have libraries that save us from having to write some, or all, of the code we might need to compare two files with numerical data.
 
-Some languages have libraries that save us from having to write some, or all, of the code we might need to compare two files with numerical data. For example, Python's scientific computing library, [numpy](http://www.numpy.org/), has functions that allow numerical data files to be compared for equality. Many languages have similar libraries.
+For example, Python's scientific computing library, [numpy](http://www.numpy.org/), has functions that allow numerical data files to be compared for equality. Other languages have similar libraries.
 
-`numpy.loadtxt` loads a file assumed to contain numerical data. It skips any lines beginning with `#`, as it treats these as comments.
+numpy's `loadtxt` function loads a file assumed to contain numerical data. It skips any lines beginning with hash (`#`), as it treats these as comments.
 
-So, we can use `numpy.loadtxt` instead of our own `compare_files` function and it will load the files into numpy arrays of numerical data.
+We can use `loadtxt`, instead of our own `compare_files` function, and it will load the files into numpy arrays of numerical data.
 
-numpy has functions to support tests that use multi-dimensional data. We can use one of these, `numpy.testing.assert_equal`, to check that our actual values match our expected values. The function checks that the data is equal both in terms of its dimensions (e.g. number of rows and columns) and its actual values.
+numpy has functions to support tests that use multi-dimensional data. We can use one of these, `assert_equal`, to check that our actual values match our expected values. `assert_equal` checks that the data is equal both in terms of its dimensions, its number of rows and columns, and its actual values.
 
 We add:
 
@@ -609,13 +603,9 @@ with:
 
 ### When 0.1 + 0.2 does not equal 0.3
 
-We might think that we are now done, but there is one further complication with our data that we need to address.
+There is one further complication with our data that we need to address. EPCC's oncology project found that their regression tests failed when they ran their code on the HECToR super-computer. Investigation showed that this arose due to their floating point calculations giving subtly different results when run on their development machine compared to when they were run on HECToR. To see why these differences arose, look at this Python example.
 
-EPCC's oncology project found that their regression tests failed when they ran their code on the HECToR super-computer. Investigation showed that this arose due to their floating point calculations giving subtly different results when run on their development machine compared to when they were run on HECToR. 
-
-To see why these differences arose, look at this Python example.
-
-If we assign 0.1 to a and 0.2 to b and print their sum, we get 0.3, as expected.
+If we assign 0.1 to `a` and 0.2 to `b` and print their sum, we get 0.3, as expected.
 
 ```
 >>> a = 0.1
@@ -624,31 +614,35 @@ If we assign 0.1 to a and 0.2 to b and print their sum, we get 0.3, as expected.
 0.3
 ```
 
-If, however, we compare the result of comparing the sum of a plus b to 0.3 we get False.
+If, however, we compare the result of comparing the sum of `a` plus `b` to 0.3 we get `False`.
 
 ```
 >>> print(a + b == 0.3)
 False
 ```
 
-If we show the value of a plus b directly we see there is a subtle margin of error.
+If we show the value of `a` plus `b` directly, we can see there is a subtle margin of error.
 
 ```
 >>> a + b
 0.30000000000000004
 ```
 
-This is because floating point numbers are approximations of real numbers. Consequently, the result of floating point calculations can depend upon the compiler or interpreter, processor or system architecture and number of CPUs or processes. 
+This is because floating point numbers are approximations of real numbers.
 
-In addition, floating point calculations are not always guaranteed to be associative: A plus B will not necessarily equal B plus A.
+The result of floating point calculations can depend upon the compiler or interpreter, processor or system architecture and number of CPUs or processes being used. 
+
+Floating point calculations are not always guaranteed to be associative. A plus B will not necessarily equal B plus A.
 
 ### Equality in a floating point world
 
-When comparing floating point numbers for equality we have to compare equality to within a given tolerance, alternatively termed a threshold or delta. For example we might consider A equal to B if the absolute value of the difference between A and B is within the absolute value of our tolerance.
+When comparing floating point numbers for equality, we have to compare to within a given tolerance, alternatively termed a threshold or delta. For example, we might consider A equal to B if the absolute value of the difference between A and B is within the absolute value of our tolerance.
 
 A = B if | A - B <= | tolerance |
 
-Many unit test frameworks provide functions for comparing equality of floating point numbers to within a given tolerance. For example, nose provides a function, `nose.tools.assert_almost_equal`, which compares two values for equality to within a given number of decimal places.
+Many unit test frameworks provide functions for comparing equality of floating point numbers to within a given tolerance.
+
+nose provides a function, `assert_almost_equal`, which compares two values for equality to within a given number of decimal places. For example, here is a test to compare two values.
 
 ```
 >>> from nose.tools import assert_almost_equal
@@ -662,9 +656,9 @@ Many unit test frameworks provide functions for comparing equality of floating p
 AssertionError: 2.000001 != 2.0000000001 within 6 places
 ```
 
-If we had a test to compare two values then it would pass if comparing these two values to within 0, 2 or 4 decimal places, but fail if we compared them to within 6 decimal places.
+This test passes if we compare these two values to within 0, 2 or 4 decimal places, but fails if we compare them to within 6 decimal places.
 
-Test frameworks for other languages provide similar functions:
+Unit test frameworks for other languages provide similar functions:
 
 * Cunit for C: `CU_ASSERT_DOUBLE_EQUAL(actual, expected, granularity)`
 * CPPUnit for C++: `CPPUNIT_ASSERT_DOUBLES_EQUAL(expected, actual, delta)`
@@ -677,11 +671,11 @@ Test frameworks for other languages provide similar functions:
 
 ### Floating point values and our code
 
-The third column of `count_frequency`'s output file is a column of floating point values, representing the number of occurrences of a string as a percentage of the total number of strings in the input file. 
+The third column of `count_frequency`'s output file is a column of floating point values, representing the number of occurrences of a tokens as a percentage of the total number of tokens in the input file. 
 
-To ensure we don't run into problems due to floating point comparisons, we want to compare equality of our expected and actual output files to within a given tolerance.
+To ensure we don't run into problems due to floating point comparisons, we want to compare equality of our expected and actual output files, to within a given tolerance.
 
-numpy also provides functions to compare multi-dimensional arrays to within a given tolerance. We can use one of these, `numpy.testing.assert_equal`, to check that our actual frequencies match our expected frequencies.
+numpy also provides functions to compare multi-dimensional arrays to within a given tolerance. We can use one of these, `assert_equal`, to check that our actual frequencies match our expected frequencies.
 
 We replace:
 
@@ -704,31 +698,31 @@ with:
                                  "freqs_events2013.dat =/= testoracle")
 ```
 
-To see why this might be useful, suppose we rewrote `count_frequency` so it could run in parallel.  A parallel version of `count_frequency` could:
+To see why this might be useful in our example, suppose we rewrote `count_frequency` so it could run in parallel. A parallel version of `count_frequency` could:
 
-* Divide up the input file into a number of chunks. For example a chunk may be 100 lines.
-* Calculate, in parallel, the frequencies of tokens within each chunk.
-* Combine the results from each chunk to get the final frequencies.
+* Divide up the input file into a number of chunks, where a chunk might be, for example, 100 lines.
+* It could then calculate, in parallel, the frequencies of tokens within each chunk.
+* Then it would combine the results from each chunk to get the final frequencies.
 
-As a result of our parallelisation, or any other optimisations, we might get subtle differences in our output files that would then cause problems when matching these to our test oracle. 
+As a result of our parallelisation, or any other optimisations, we might get subtle differences in our output files, in the column of percentages, that would then cause problems when matching these to our test oracle. 
 
-What is a suitable threshold for equality? That depends upon the domain, and the research being undertaken. For some fields, rounding to the nearest whole number may be acceptable. For others, far greater precision may be required.
+So, we have talked about tolerance, what is a suitable tolerance, what is a suitable threshold for equality? That depends upon the domain, and the research being undertaken. For some fields, rounding to the nearest whole number may be acceptable. For others, far greater precision may be required.
+
+## Regression testing examples
+
+We will now will look at an another example of a regression test framework for `count_frequency`, but written in R, before looking at other examples of regression testing in practice.
 
 ## What our regression test framework does
 
 We now have a regression test framework for `count_frequency` with three regression tests.
 
-The first two tests check `count_frequency`'s behaviour when given a valid input file. They run `count_frequency` with valid input files, and command-line parameters and check `count_frequency` exits with an exit status of zero, indicating success. They check that an output file exists, then compares the output file to the expected output file for equality to within a given tolerance.
+The first two tests check `count_frequency`'s behaviour when given a valid input file. They run `count_frequency` with both valid input files and command-line parameters, and check `count_frequency` exits with an exit status of zero, indicating success. They check that an output file exists, then compare the output file to the expected output file in the test oracle for equality, to within a given tolerance.
 
 The third test checks `count_frequency`'s behaviour when not given an input file. It runs `count_frequency` and checks that `count_frequency` exits with a non-zero exit status, indicating an expected error.
 
-## Regression testing examples
-
-I will now give an example of our framework, but implemented in R, and describe other examples of regression testing in practice.
-
 ### A regression test in R
 
-As an example of how the recipe can be used with other languages, here is one of our regression tests in R, [test_count_frequency.R](./test_count_frequency.R):
+As an example of how the recipe can be used with other languages, here is our first regression test, written in R, [test_count_frequency.R](./test_count_frequency.R):
 
 ```
 library(testthat)
@@ -766,13 +760,13 @@ It assumes we have populated a `testoracle` directory, as we described earlier.
 
 It uses R's [system2](https://stat.ethz.ch/R-manual/R-devel/library/base/html/system2.html) command to invoke `count_frequency`.
 
-It uses testthat's `expect_equal` method to check the exit status from `count_frequency`.
+It uses testthat's `expect_equal` function to check the exit status from `count_frequency`.
 
 It then uses testthat's `expect_true` and R's `file.exists` functions to check that the output file exists.
 
-R's `read.table` function is then used to read in the expected data from the test oracle and the actual data from the output file.
+R's `read.table` function is used to read in the expected data from the test oracle and the actual data from the output file.
 
-testthat's `expect_equivalent` function is used to compare the dimensions (number of rows and columns) of the expected and actual data.
+testthat's `expect_equivalent` function is used to compare the dimensions, the number of rows and columns, of the expected and actual data.
 
 Finally, testthat's `expect_equal` function is used to compare the expected and actual data to within a given tolerance.
 
@@ -804,70 +798,71 @@ $ Rscript testthat.R
 
 ### FABBER
 
-[FABBER](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FABBER) is a C++ code developed by the University of Oxford to process MRI images and to help the recognition of blood flow patterns in the brain and measure brain activity. It is invoked from within a set of shell scripts called BASIL.
+As another example of regression testing in practice, let's look at [FABBER](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FABBER).
 
-The Software Sustainability Institute were asked to [propose how FABBER could be redesigned to be more modular and extensible](http://www.software.ac.uk/blog/2014-10-17-magnetic-imaging-software-now-fabberlously-easy-use). As part of this work, one of their consultants did some rapid prototyping to demonstrate their suggestions, but, to ensure they didn't introduce any bugs, the consultant developed a regression test harness.
+FABBER is a C++ code developed by the University of Oxford to process medical images, and to help the recognition of blood flow patterns in the brain and to measure brain activity. It is invoked from within a set of shell scripts called BASIL.
 
-The consultant edited the BASIL shell scripts that invoked FABBER so they could capture the input files and command-line parameters passed into FABBER from BASIL, and to capture the output files from FABBER.
+The Software Sustainability Institute were asked to [propose how FABBER could be redesigned to be more modular and extensible](http://www.software.ac.uk/blog/2014-10-17-magnetic-imaging-software-now-fabberlously-easy-use)
 
-The consultant then worked through BASIL tutorials that invoked FABBER to capture sets of input files, command-line parameters and output files. These served as the test oracle.
+As part of this work, one of their consultants did some rapid prototyping to demonstrate their suggestions, but, to ensure they didn't introduce any bugs, the consultant developed a regression test framework.
 
-They used a simple shell script-based regression test framework that checked for the existence of output files and compared expected to actual files using the `diff` command.
+The consultant edited the BASIL shell scripts that invoked FABBER, so they could capture the input files and command-line parameters passed into FABBER from BASIL, and, likewise, to capture the output files from FABBER.
 
-One reason for the consultant using a regression test framework is that they were not a bioinformatician. There was no way they could assess the scientific correctness of FABBER's outputs, but the regression test framework meant that they could detect whether or not they had changed its behaviour.
+The consultant then worked through BASIL tutorials that invoked FABBER, so they could capture sets of input files, command-line parameters and output files. These then served as the test oracle.
+
+The consultant used a shell script-based regression test framework that checked for the existence of output files, and compared expected files to actual files using the `diff` command.
+
+One reason for the consultant using a regression test framework is that they were not a bioinformatician. There was no way they could assess the scientific correctness of FABBER’s outputs, but the regression test framework meant that they could detect whether or not they had changed its behaviour.
 
 ### TPLS (Two-phase Level Set)
 
-[TPLS](http://sourceforge.net/projects/tpls/), from The University of Edinburgh and University College Dublin is an innovative Fortran code for modelling complex fluid flows, and which provides effective computational fluid dynamics analysis for academia and industry. TPLS runs on both Linux clusters and [ARCHER](http://www.archer.ac.uk).
+[TPLS](http://sourceforge.net/projects/tpls/), Two-phase Level Set, from The University of Edinburgh and University College Dublin is an innovative Fortran code for modelling complex fluid flows, and which provides effective computational fluid dynamics analysis for academia and industry. TPLS runs on both Linux clusters and on the [ARCHER](http://www.archer.ac.uk) super-computer.
 
-The Software Sustainability Institute [worked with TPLS](http://software.ac.uk/blog/2014-11-07-improved-code-archer-hits-target) to make it more usable and configurable. To ensure that no bugs were introduced during this refactoring, the Institute's consultant created a test oracle by running TPLS with sets of input parameters and saving its output files (TPLS has no input files).
+The Software Sustainability Institute [worked with TPLS](http://software.ac.uk/blog/2014-11-07-improved-code-archer-hits-target) to make it more usable and configurable. To ensure that no bugs were introduced during this refactoring, the Institute's consultant created a test oracle by running TPLS with sets of input parameters and saving its output files. TPLS has no input files.
 
-A regression test framework was written in Python, using numpy, to compare TPLS output files to those of the test oracle. As the output files contained logging-related meta-data these parts of the files were compared only in terms of the number of lines. The numerical data was compared using a numpy function, `numpy.allclose`, that, like `assert_almost_equal` compares multi-dimensional data for equality to within a given tolerance, which was valuable given that TPLS produces subtly different results depending on the number of processes it runs with or whether it is running on a Linux cluster or ARCHER.
-
+A regression test framework was written in Python, using numpy, to compare TPLS output files to those of the test oracle. As the output files contained logging-related meta-data, these parts of the files were compared only in terms of the number of lines they had. The numerical data was compared using a numpy function, `numpy.allclose`, that, like `assert_almost_equal` compares multi-dimensional data for equality to within a given tolerance. This was essential given that TPLS produces subtly different results depending on the number of processors it runs on, or whether it is running on a Linux cluster or ARCHER.
 
 ## Conclusions
 
-To conclude, I'll describe ways in which the regression test recipe can be customised, discuss some of its limitations and sum up the key points of this guide.
+To conclude, I'll describe ways in which the regression test recipe can be customised, discuss some of its limitations and sum up key points of this guide.
 
 ### Customise the recipe
 
-What we have presented is a recipe, not a set of hard-and-fast rules. It can to be customised to the needs of testing individual codes.
+What I have presented is a recipe, not a set of hard-and-fast rules. It can to be customised to the needs of testing individual codes.
 
-In our example, we are running the code we are testing as part of the regression test framework. In many cases, this will not be possible. For example, TPLS is run on ARCHER via ARCHER's job submission system. To invoke this from within Python would make the regression test framework unnecessarily complex. So, for TPLS, the regression test framework implemented the comparisons between the expected output data files of the test oracle and the actual output data files from a run of TPLS. A developer was required to run TPLS to create the actual output data files, before running the regression test framework.
+In our example, we are running the code we are testing as part of the regression test framework. In many cases, this will not be possible. For example, TPLS is run on ARCHER via ARCHER's job submission system. To invoke this from within Python would make the regression test framework unnecessarily complex. For TPLS, the regression test framework implemented the comparisons between the expected output data files of the test oracle and the actual output data files from a run of TPLS. A developer was required to run TPLS to create the actual output data files, before running the regression test framework.
 
-Likewise, if we wanted to introduce regression tests for interactive or GUI-based programs, this approach could be adopted. A developer could follow a manual test script to create the output data files, then a regression test framework could be run to compare these to the test oracle.
+Likewise, if we wanted to introduce regression tests for interactive or graphical-user interface-based programs, a similar approach could be adopted. A developer could follow a manual test script to create the output data files, then a regression test framework could be run to compare these to the test oracle.
 
-As we saw for EPCC's oncology project, using a complete data set may be unfeasible. So we may want to use a subset of our data, or a simplified data set, to create a test oracle. 
+As we saw for EPCC's oncology project, using a complete data set may be unfeasible. We may want to use a subset of our data, or a simplified data set, to create a test oracle. 
 
-As an alternative to creating the test oracle from running our code at the outset, we might create the test oracle from experimental data. 
-
-Or, we might want to use analytical solutions, results we have computed mathematically. This can be useful when implementing new algorithms from scratch, as it ensures that our code produces, and continues to produce, correct results.
+As an alternative to creating the test oracle from running our code, we can create the test oracle from experimental data. Or, we might want to use analytical solutions, results we have computed mathematically. This can be useful when implementing new algorithms from scratch, as it ensures that our code produces, and continues to produce, the expected results.
 
 ### Limitations
 
-Our regression test framework does have some limitations.
+Regression testing does have some limitations. It does not test each individual function, method or class, only the code as a whole. To test these individually is the remit of unit tests.
 
-It does not test each individual function, method or class, only the code as a whole. To test these individually is the remit of unit tests.
+Nor are regression tests guaranteed to test all parts of the code. Test coverage tools can provide information on what parts of our code are, or are not, executed when we run our regression tests.
 
-Nor are they guaranteed to test all parts of the code. Test coverage tools can provide information on what parts of our code are, or are not, executed when we run our tests.
+Most importantly, regression tests do not test scientific correctness. This the remit of unit and system tests, though regression tests can serve as the starting point for introducing tests for scientific correctness, by both the use of analytical solutions within a test oracle, and test functions which read output files and check the data for scientific correctness, as defined by a researcher.
 
-And, they do not test scientific correctness. To test this is the remit of unit and system tests, though regression tests can serve as the starting point for introducing tests for scientific correctness, by both the use of analytical solutions within a test oracle, and test functions which read output files and check the data for scientific correctness, as defined by a researcher.
-
-Regression tests also can serve as a starting point for introducing unit tests. When working with FABBER, the consultant added C++ code to log the input values and return values from their functions. They then ran the FABBER code via the BASIL tutorials and wrote CppUnit unit tests to call these values with the input values that had been logged and to check that the output values were equal to the return values that had been logged. Removing the logging code restored FABBER to its original state, and they were left with an initial set of unit tests for some of FABBER's functions.
+Regression tests also can serve as a starting point for introducing unit tests. When working with FABBER, the consultant added C++ code to log the input values to and return values from FABBER's C++ functions. They then ran the FABBER code, via the BASIL tutorials, and wrote unit tests in CppUnit to call these functions with the input values that had been logged, and to check that the return values were equal to the return values that had been logged. Removing the logging code restored FABBER to its original state, and the consultant was left with an initial set of unit tests for some of FABBER's functions.
 
 ### Key points
 
-Automated tests can be written just once, but run many times, freeing us to do innovative activities, such as research!
-
-In this guide, I presented a recipe to introduce regression tests:
+Automated tests can be written just once, but run many times, freeing us up to focus on innovative activities, such as research! In this guide, I presented a recipe to introduce regression tests:
 
 * Create a test oracle with our expected outputs for sets of input files and parameters.
 * Write regression tests which run our code, and compares the actual outputs to the expected outputs of the test oracle.
-* Run the regression tests regularly or after every change to the code.
+* And, run the regression tests regularly or after every change to the code.
 
-Regression tests can help new developers on research projects, developers who may know how to design, develop, refactor and optimise software but may lack the domain knowledge required to validate that the outputs are scientifically correct. So long as a researcher has validated the outputs used to create the test oracle, the developer can refactor, optimise and tidy the software, with some confidence that they are not undermining its scientific correctness.
+Regression tests can help new developers on research projects, developers who know how to develop, refactor and optimise code but may lack the domain knowledge required to validate that the outputs are scientifically correct.
 
-Regression tests provide us with a way to ensure that when we refactor, fix, extend, tidy, optimise or parallelise our code we don't accidently introduce a bug as we do so, and, if we do introduce a bug, then to quickly spot this. They act as a safety net for our development.
+If a researcher validates the outputs used to create the test oracle, then a developer can develop, refactor, and optimise the code, with confidence that they are not undermining its scientific correctness.
+
+Regression tests provide us with a way to ensure that when we refactor, fix, extend, tidy, optimise or parallelise our code we do not accidently introduce a bug as we do so, and, if we do introduce a bug, then to help us to spot this quickly.
+
+They act as a valuable safety net for our development.
 
 ## Acknowledgements, copyright and licence
 
