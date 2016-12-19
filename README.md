@@ -1,5 +1,7 @@
 # Regression Testing
 
+By [Mike Jackson](https://www.software.ac.uk/about/people/mike-jackson), Software Sustainability Institute.
+
 "Refactor, optimise and parallelise your code with confidence"
 
 One of the risks of refactoring, optimising or parallelising our code is that we might introduce a bug as we do so.
@@ -30,7 +32,7 @@ To get these examples, you can download the ZIP file of this repository by click
 $ git clone http://github.com/softwaresaved/automated_testing.git
 ```
 
-If using Linux/Unix, then, once you have the repository, run:
+If using Linux/Unix, then, once you have the repository, we need to set permissions on a couple of scripts so they can be executed directly, and add the current directory to our PATH environment variable. Run the following:
 
 ```
 $ chmod +x count_frequency
@@ -196,7 +198,7 @@ Following the recipe, we first create a test oracle. We can create a directory, 
 $ mkdir testoracle
 ```
 
-We then run `count_frequency` on valid input files, and populate the `testoracle` directory with the corresponding output files.
+We then run `count_frequency` on valid input files - those we know to be correct - and populate the `testoracle` directory with the corresponding output files.
 
 ```
 $ count_frequency samples/events2013.dat testoracle/freqs_events2013.dat
@@ -398,7 +400,7 @@ def compare_files(file_name1, file_name2):
   return True
 
 def test_count_frequency():
-  subprocess.call(
+  result = subprocess.call(
     "count_frequency samples/events2013.dat freqs_events2013.dat",
     shell=True)
   assert_equal(0, result, "Unexpected exit status")
@@ -439,6 +441,7 @@ from nose.tools import assert_not_equal
 def test_missing_output_file_name():
   cmd = "count_frequency samples/events2013.dat"
   result = subprocess.call(cmd, shell=True)
+  assert_not_equal(0, result, "Unexpected exit status")
 ```
 
 After all, if changing `count_frequency`, we would not want to introduce a bug that means it returns an exit status of zero, if the output file name is not provided.
