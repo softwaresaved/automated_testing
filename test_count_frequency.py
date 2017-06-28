@@ -1,4 +1,4 @@
-# Copyright 2014-2015, The University of Edinburgh.
+# Copyright 2014-2017, The University of Edinburgh.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,9 +30,6 @@ import numpy as np
 import os
 import os.path
 import subprocess
-from nose.tools import assert_equal
-from nose.tools import assert_not_equal
-from nose.tools import assert_true
 
 
 def compare_files(file_name1, file_name2):
@@ -76,13 +73,15 @@ def test_count_frequency():
     """
     cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
     result = subprocess.call(cmd, shell=True)
-    assert_equal(0, result, "Unexpected return code")
-    assert_true(os.path.isfile("freqs_events2013.dat"),
-                "Could not find freqs_events2013.dat")
+    assert 0 == result, "Unexpected return code"
+    assert os.path.isfile("freqs_events2013.dat"),\
+        "Could not find freqs_events2013.dat"
     actual = np.loadtxt("freqs_events2013.dat")
     expected = np.loadtxt("testoracle/freqs_events2013.dat")
-    np.testing.assert_almost_equal(expected, actual, 2,
-                                   "freqs_events2013.dat =/= testoracle")
+    np.testing.assert_almost_equal(expected,
+                                   actual,
+                                   2,
+                                   "freqs_events2013.dat does not match file on testoracle")
 
 
 def test_minimum_token_length():
@@ -91,13 +90,15 @@ def test_minimum_token_length():
     """
     cmd = "count_frequency samples/events2013.dat freqs5_events2013.dat 5"
     result = subprocess.call(cmd, shell=True)
-    assert_equal(0, result, "Unexpected return code")
-    assert_true(os.path.isfile("freqs5_events2013.dat"),
-                "Could not find freqs5_events2013.dat")
+    assert 0 == result, "Unexpected return code"
+    assert os.path.isfile("freqs5_events2013.dat"),\
+        "Could not find freqs5_events2013.dat"
     actual = np.loadtxt("freqs5_events2013.dat")
     expected = np.loadtxt("testoracle/freqs5_events2013.dat")
-    np.testing.assert_almost_equal(expected, actual, 2,
-                                   "freqs5_events2013.dat =/= testoracle")
+    np.testing.assert_almost_equal(expected,
+                                   actual,
+                                   2,
+                                   "freqs5_events2013.dat does not match file on testoracle")
 
 
 def test_missing_output_file_name():
@@ -106,4 +107,4 @@ def test_missing_output_file_name():
     """
     cmd = "count_frequency samples/events2013.dat"
     result = subprocess.call(cmd, shell=True)
-    assert_not_equal(0, result, "Unexpected return code")
+    assert 0 != result, "Unexpected return code"

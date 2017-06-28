@@ -24,7 +24,7 @@ For the purpose of this guide, the term "code" can mean anything, whether this b
 
 ## Follow along...
 
-If you want to run the examples in this guide yourself, then you will need Python 2.7 plus the [nose](https://pypi.python.org/pypi/nose/) test framework, and the [numpy](http://www.numpy.org/) scientific computing package. To download these, and other Python packages, the [Anaconda](https://store.continuum.io/cshop/anaconda/) all-in-one Python installer is recommended.
+If you want to run the examples in this guide yourself, then you will need Python 2.7 plus the [pytest](https://docs.pytest.org/en/latest/) test framework, and the [numpy](http://www.numpy.org/) scientific computing package. To download these, and other Python packages, the [Anaconda](https://store.continuum.io/cshop/anaconda/) all-in-one Python installer is recommended.
 
 To get these examples, you can download the ZIP file of this repository by clicking on the Download ZIP button. Or, if know how to use Git, clone this repository, for example:
  
@@ -178,7 +178,7 @@ Which language do we choose?
 
 Many languages provide functions that allow commands to be passed to the operating system, such as that to run our code. These functions also return the exit status from the commands run. Many languages also provide functions to check that directories and files exist, read in files line-by-line, parse lines and to compare values of various types, for example, integers, floats, doubles, strings, or booleans.
 
-Many of these languages have associated [unit testing frameworks](http://en.wikipedia.org/wiki/xUnit). For example, C has CUnit, C++ has CppUnit and googletest, Fortran has FRUIT, Java has JUnit, Python has nose and py.test, and R has testthat (see, for example, The Software Sustainability Institute's [Build and test examples](http://github.com/softwaresaved/build_and_test_examples)).
+Many of these languages have associated [unit testing frameworks](http://en.wikipedia.org/wiki/xUnit). For example, C has CUnit, C++ has CppUnit and googletest, Fortran has FRUIT, Java has JUnit, Python has pytest, and R has testthat (see, for example, The Software Sustainability Institute's [Build and test examples](http://github.com/softwaresaved/build_and_test_examples)).
 
 Unit test frameworks provide numerous functions to help write tests. These include functions to compare values of various types, and to check whether certain conditions hold that mean that a test has passed or failed. They also record which tests pass and fail, and create reports summarising test passes and failures. Despite their name, unit test frameworks are not just for unit tests!
 
@@ -188,7 +188,7 @@ We could choose a language which has a more powerful, or usable, test framework 
 
 Or, we might want to use the same language as our code, as this can make introducing unit tests in future less challenging.
 
-For our example, we'll use Python, as it does not need to be compiled, and is complemented by two useful tools, the [nose](https://nose.readthedocs.org/) unit test framework, and the [numpy](http://www.numpy.org/) scientific computing package, which provides useful functions for comparing files with numerical data.
+For our example, we'll use Python, as it does not need to be compiled, and is complemented by two useful tools, the [pytest](https://docs.pytest.org/en/latest/) unit test framework, and the [numpy](http://www.numpy.org/) scientific computing package, which provides useful functions for comparing files with numerical data.
 
 ### Create a test oracle
 
@@ -273,16 +273,20 @@ def test_count_frequency():
 
 Putting our test code into functions not only is more modular, it allows us to run our tests using a unit test framework.
 
-The Python unit test framework, nose, has a test runner, `nosetests`, which looks for functions with the prefix `test_` and runs these. It records which tests succeeded and which failed, and prints reports on these.
+The Python unit test framework, pytest, has a test runner, `py.test`, which looks for functions with the prefix `test_` and runs these. It records which tests succeeded and which failed, and prints reports on these.
 
-If we run `test_counts.py` using `nosetests`, we get a report that shows our test successfully passed, as `nosetests` prints a dot for each test function that it finds and runs, and which succeeds.
+If we run `test_counts.py` using `py.test`, we get a report that shows our test successfully passed, as `py.test` prints a dot for each test function that it finds and runs, and which succeeds.
 
 ```
-$ nosetests test_counts.py
-.
-----------------------------------------------------------------------
-Ran 1 test in 10.576s
-OK
+$ py.test test_counts.py
+============================= test session starts ==============================
+platform linux2 -- Python 2.7.5 -- py-1.4.27 -- pytest-2.7.0
+rootdir: /home/mjj/prog-skills/automated_testing, inifile: 
+collected 1 items 
+
+test_counts.py .
+
+=========================== 1 passed in 4.32 seconds ===========================
 ```
 
 Many unit test frameworks provide these capabilities, so long as tests are written in a certain way. For example, using FRUIT for Fortran we write test subroutines.
@@ -313,16 +317,15 @@ Python's `call` function returns the exit status from the command that was passe
 
 Linux, Unix and Windows adopt the convention that a exit status of zero means that a command exited OK and non-zero means that some problem arose.
 
-We can check that the exit status is zero. We can use a function provided by nose, `assert_equal`, which compares two values for equality, and, if they are not equal, records that the test has failed, along with an informative failure message.
+We can check that the exit status is zero. We can use a function provided by Python, `assert`, which tests some condition and if the condition does not hold then notes an error which pytest records as a test failure. We can use this to compare two values for equality, and, if they are not equal, records that the test has failed, along with an informative failure message:
 
 ```
 import subprocess
-from nose.tools import assert_equal
 
 def test_count_frequency():
   cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
   result = subprocess.call(cmd, shell=True)
-  assert_equal(0, result, "Unexpected exit status")
+  assert 0 == result, "Unexpected exit status"
 ```
 
 If a code always returns zero, due to the way it has been implemented, that's OK, as we will also do other checks.
@@ -333,20 +336,16 @@ The next check we can do is that we have an output file with the frequency count
 
 Python's [os.path.isfile](https://docs.python.org/2/library/os.path.html#os.path.isfile) function allows us to check if a file exists. We can check that the expected output file now exists, after running `count_frequency`.
 
-We can use a function provided by nose, `assert_true`, which checks if a condition holds and, if not, records that the test has failed, along with an informative failure message.
-
 ```
-import os.path
+import os
 import subprocess
-from nose.tools import assert_equal
-from nose.tools import assert_true
 
 def test_count_frequency():
   cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
   result = subprocess.call(cmd, shell=True)
-  assert_equal(0, result, "Unexpected exit status")
-  assert_true(os.path.isfile("freqs_events2013.dat"),
-              "Could not find freqs_events2013.dat")
+  assert 0 == result, "Unexpected exit status"
+  assert os.path.isfile("freqs_events2013.dat"),\
+    "Could not find freqs_events2013.dat"
 ```
 
 By checking that the output file exists, we can handle situations where code we are testing returns an exit status of zero, even if problems arise.
@@ -361,18 +360,18 @@ Rather than just checking if an output file exists, we really want to check whet
 
 Under Linux or Unix, we can use `call` to invoke the `diff` command to compare the actual output file to the expected output file. We can provide the `-q` command-line flag to `diff` to suppress its output.
 
-If `diff` returns an exit status of zero then the two files are equal. If it returns an exit status of non-zero, then the two files differ. We can use `assert_equals` to check that we do indeed get an exit status of zero, and, if not, then fail our test.
+If `diff` returns an exit status of zero then the two files are equal. If it returns an exit status of non-zero, then the two files differ. We can use `assert` to check that we do indeed get an exit status of zero, and, if not, then fail our test.
 
 ```
 def test_count_frequency():
   cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
   result = subprocess.call(cmd, shell=True)
-  assert_equal(0, result, "Unexpected exit status")
-  assert_true(os.path.isfile("freqs_events2013.dat"),
-              "Could not find freqs_events2013.dat")
+  assert 0 == result, "Unexpected exit status"
+  assert os.path.isfile("freqs_events2013.dat"),\
+    "Could not find freqs_events2013.dat"
   cmd = "diff -q freqs_events2013.dat testoracle/freqs_events2013.dat"
   result = subprocess.call(cmd, shell=True)
-  assert_equal(0, result, "freqs_events2013.dat =/= testoracle")
+  assert 0 == result, "freqs_events2013.dat does not match file on testoracle"
 ```
 
 Under Windows, we can use the DOS `fc`, file compare, command, redirecting the output to `NUL` to suppress its output.
@@ -400,15 +399,14 @@ def compare_files(file_name1, file_name2):
   return True
 
 def test_count_frequency():
-  result = subprocess.call(
-    "count_frequency samples/events2013.dat freqs_events2013.dat",
-    shell=True)
-  assert_equal(0, result, "Unexpected exit status")
-  assert_true(os.path.isfile("freqs_events2013.dat"), 
-              "Could not find freqs_events2013.dat")
-  assert_true(compare_files("freqs_events2013.dat",
-                            "testoracle/freqs_events2013.dat"),
-              "freqs_events2013.dat =/= testoracle")
+  cmd = "count_frequency samples/events2013.dat freqs_events2013.dat"
+  result = subprocess.call(cmd, shell=True)
+  assert 0 == result, "Unexpected exit status"
+  assert os.path.isfile("freqs_events2013.dat"),\
+    "Could not find freqs_events2013.dat"
+  assert compare_files("freqs_events2013.dat",
+                       "testoracle/freqs_events2013.dat"),\
+    "freqs_events2013.dat does not match file on testoracle"
 ```
 
 Even if we don't care about cross-platform portability, there are other good reasons why we should write code to check the correctness of our output files against the test oracle, as we will soon see.
@@ -425,23 +423,21 @@ Ideally, we'd want to add some, a lot, more tests, for example, to test `count_f
 def test_minimum_token_length():
   cmd = "count_frequency samples/events2013.dat freqs5_events2013.dat 5"
   result = subprocess.call(cmd, shell=True)
-  assert_equal(0, result, "Unexpected exit status")
-  assert_true(os.path.isfile("freqs5_events2013.dat"),
-              "Could not find freqs5_events2013.dat")
-  assert_true(compare_files("freqs5_events2013.dat",
-                            "testoracle/freqs5_events2013.dat"),
-              "freqs5_events2013.dat not equal to testoracle")
+  assert 0 == result, "Unexpected exit status"
+  assert os.path.isfile("freqs5_events2013.dat"),\
+    "Could not find freqs5_events2013.dat"
+  assert compare_files("freqs5_events2013.dat",
+                       "testoracle/freqs5_events2013.dat"),\
+    "freqs5_events2013.dat does not match file on testoracle"
 ```
 
 Another type of test we can do is to check what happens when our code is not given valid inputs. For example, if we do not provide an output file name to `count_frequency`, then it returns a non-zero exit status. We can write a regression test for this too.
 
 ```
-from nose.tools import assert_not_equal
-
 def test_missing_output_file_name():
   cmd = "count_frequency samples/events2013.dat"
   result = subprocess.call(cmd, shell=True)
-  assert_not_equal(0, result, "Unexpected exit status")
+  assert 0 != result, "Unexpected exit status"
 ```
 
 After all, if changing `count_frequency`, we would not want to introduce a bug that means it returns an exit status of zero, if the output file name is not provided.
@@ -548,18 +544,17 @@ In this scenario, we would want to have a smarter check for equality, one that:
 
 ```
 from datetime import datetime
-from nose.tools import assert_true
 
 def check_timestamp(date_created):
-  assert_true(date_created.startswith("DateCreated: "), 
-              msg="Invalid timestamp prefix " + date_created)
+  assert date_created.startswith("DateCreated: "),\
+    "Invalid timestamp prefix " + date_created
   try:
     date_str = date_created.strip("DateCreated: ")
     datetime.strptime(date_str, "%Y-%m-%d %H:%M")
     is_valid = True
   except ValueError:
     is_valid = False
-  assert_true(is_valid, "Invalid timestamp")
+  assert is_valid, "Invalid timestamp"
 
 check_timestamp("DateCreated: 2015-01-28 11:23")
 ```
@@ -589,9 +584,17 @@ import numpy as np
 and replace:
 
 ```
-  assert_true(compare_files("freqs_events2013.dat",   
-              "testoracle/freqs_events2013.dat"), 
-              "freqs_events2013.dat =/= testoracle")
+  assert compare_files("freqs_events2013.dat",
+                       "testoracle/freqs_events2013.dat"),\
+    "freqs_events2013.dat does not match file on testoracle"
+```
+
+and:
+
+```
+  assert compare_files("freqs5_events2013.dat",
+                       "testoracle/freqs5_events2013.dat"),\
+    "freqs5_events2013.dat does not match file on testoracle"
 ```
 
 with:
@@ -601,7 +604,18 @@ with:
   expected = np.loadtxt("testoracle/freqs_events2013.dat")
   np.testing.assert_equal(expected,
                           actual,
-                          "freqs_events2013.dat =/= testoracle")
+                          "freqs_events2013.dat does not match file on testoracle")
+
+```
+
+and:
+
+```
+  actual = np.loadtxt("freqs5_events2013.dat")
+  expected = np.loadtxt("testoracle/freqs5_events2013.dat")
+  np.testing.assert_equal(expected,
+                          actual,
+                          "freqs5_events2013.dat does not match file on testoracle")
 ```
 
 ### When 0.1 + 0.2 does not equal 0.3
@@ -643,20 +657,39 @@ When comparing floating point numbers for equality, we have to compare to within
 
 A = B if | A - B <= | tolerance |
 
-Many unit test frameworks provide functions for comparing equality of floating point numbers to within a given tolerance.
-
-nose provides a function, `assert_almost_equal`, which compares two values for equality to within a given number of decimal places. For example, here is a test to compare two values.
+For example:
 
 ```
->>> from nose.tools import assert_almost_equal
 >>> expected = 2.000001
 >>> actual = 2.0000000001
->>> assert_almost_equal(expected, actual, 0)
->>> assert_almost_equal(expected, actual, 2)
->>> assert_almost_equal(expected, actual, 4)
->>> assert_almost_equal(expected, actual, 6)
-...
-AssertionError: 2.000001 != 2.0000000001 within 6 places
+>>> assert abs(expected - actual) < 1, "Not equal within given tolerance"
+>>> assert abs(expected - actual) < 0.1, "Not equal within given tolerance"
+>>> assert abs(expected - actual) < 0.001, "Not equal within given tolerance"
+>>> assert abs(expected - actual) < 0.00001, "Not equal within given tolerance"
+>>> assert abs(expected - actual) < 0.0000001, "Not equal within given tolerance"
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AssertionError: Not equal within given tolerance
+>>> 
+
+Many unit test frameworks provide functions for comparing equality of floating point numbers to within a given tolerance.
+
+numpy provides a function, `isclose`, which compares two values for equality to within a given tolerance. For example, here is the same tests as above, using `isclose`:
+
+```
+>>> from numpy import isclose
+>>> expected = 2.000001
+>>> actual = 2.0000000001
+>>> isclose(expected, actual, atol=1, rtol=0)
+True
+>>> isclose(expected, actual, atol=0.1, rtol=0)
+True
+>>> isclose(expected, actual, atol=0.001, rtol=0)
+True
+>>> isclose(expected, actual, atol=0.00001, rtol=0)
+True
+>>> isclose(expected, actual, atol=0.0000001, rtol=0)
+False
 ```
 
 This test passes if we compare these two values to within 0, 2 or 4 decimal places, but fails if we compare them to within 6 decimal places.
@@ -678,27 +711,40 @@ The third column of `count_frequency`'s output file is a column of floating poin
 
 To ensure we don't run into problems due to floating point comparisons, we want to compare equality of our expected and actual output files, to within a given tolerance.
 
-numpy also provides functions to compare multi-dimensional arrays to within a given tolerance. We can use one of these, `assert_equal`, to check that our actual frequencies match our expected frequencies.
+numpy also provides functions to compare multi-dimensional arrays to within a given tolerance. We can use one of these, `assert_almost_equal`, to check that our actual frequencies match our expected frequencies.
 
 We replace:
 
 ```
-  actual = np.loadtxt("freqs_events2013.dat")
-  expected = np.loadtxt("testoracle/freqs_events2013.dat")
   np.testing.assert_equal(expected,
                           actual,
-                          "freqs_events2013.dat =/= testoracle")
+                          "freqs_events2013.dat does not match file on testoracle")
+```
+
+and:
+
+```
+  np.testing.assert_equal(expected,
+                          actual,
+                          "freqs5_events2013.dat does not match file on testoracle")
 ```
 
 with:
 
 ```
-  actual = np.loadtxt("freqs_events2013.dat")
-  expected = np.loadtxt("testoracle/freqs_events2013.dat")
   np.testing.assert_almost_equal(expected,
                                  actual,
                                  2,
-                                 "freqs_events2013.dat =/= testoracle")
+                                 "freqs_events2013.dat does not match file on testoracle")
+```
+
+and:
+
+```
+  np.testing.assert_almost_equal(expected,
+                                 actual,
+                                 2,
+                                 "freqs5_events2013.dat does not match file on testoracle")
 ```
 
 To see why this might be useful in our example, suppose we rewrote `count_frequency` so it could run in parallel. A parallel version of `count_frequency` could:
@@ -869,7 +915,7 @@ They act as a valuable safety net for our development.
 
 ## Acknowledgements, copyright and licence
 
-Copyright (c) 2014-2015 The University of Edinburgh.
+Copyright (c) 2014-2017 The University of Edinburgh.
 
 Code is licensed under the [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) licence. The licence text is also in [LICENSE-2.0.txt](./LICENSE-2.0.txt).
 
