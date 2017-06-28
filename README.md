@@ -670,7 +670,7 @@ For example:
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 AssertionError: Not equal within given tolerance
->>> 
+```
 
 Many unit test frameworks provide functions for comparing equality of floating point numbers to within a given tolerance.
 
